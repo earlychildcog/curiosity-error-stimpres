@@ -7,7 +7,7 @@ end
 
 % initialise
 flagResult = 0;
-
+flagKeyFlip = false;
 nStimOnScreen  = xp.settings.nStimOnScreen;
 durToHighlight = xp.settings.durToHighlight; 
 durToFlip      = xp.settings.durMinToFlip; 
@@ -18,8 +18,8 @@ durMax         = 20;        % abort if subject takes too long to flip
 %% ACTION LOOP
 while true
     % checks
-    [roiFix, timeFix] = xp.checkFix(1+(1:nStimOnScreen), 1/30); % added some padding (1/30 * screen height) to make AOIs bigger
-    [durFixIn, flagFixIn] = xp.checkROI(roiFix, timeFix);
+    [roiFix, timeFix, flagKeyFlip] = xp.checkFix(1+(1:nStimOnScreen), 1/30); % added some padding (1/30 * screen height) to make AOIs bigger
+    [durFixIn, flagFixIn, timeFirstIn] = xp.checkROI(roiFix, timeFix);
     flagResult = xp.checkKeyboard;
     flagResult = xp.checkEndTrial(flagResult, roiFix);
     flagResult = xp.checkEndStep(flagResult, timeStepStart, durMax);
@@ -35,6 +35,7 @@ while true
         % draw card
         DrawAllCards(xp, stateCards);
         tHighlight = xp.flip;
+        timeFirstIn_       = timeFirstIn;
         % sound
         xp.sound.stop;
         xp.sound.which = xp.sound.data{2,8}; %click
@@ -53,7 +54,6 @@ while true
         tTopCardUp = xp.flip;
         % events send
         xp.eyelink.write('top card faces up @%.3fsec',tTopCardUp)
-        xp.eeg.eventSave('tcfu', tTopCardUp) % top card faces up
         % sound
         xp.sound.stop;
         xp.sound.which = xp.sound.data{2,3}; %flip
@@ -61,3 +61,10 @@ while true
         break
     end
 end
+
+%% events
+
+xp.trial.varValue.keyFlip = xp.trial.varValue.keyFlip || flagKeyFlip;
+xp.trial.varValue.delayFirstFixT = timeFirstIn_ - timeStepStart;
+xp.eeg.eventSave('fixT', timeFirstIn_)  % t looked at bottom card which triggered the flip
+xp.eeg.eventSave('tcfl', tTopCardUp) % top card faces up

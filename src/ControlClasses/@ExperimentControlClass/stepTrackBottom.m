@@ -6,9 +6,9 @@ function [flagResult, stateCards, flagCorrect] = stepTrackBottom(xp, trialtype)
 % initialise
 flagResult    = false;
 flagCorrect   = false;
+flagKeyFlip   = false;
 timeStepStart = GetSecs;
 durMax        = 10;   % abort if subject takes too long to flip
-
 % tracking
 nStimOnScreen     = xp.settings.nStimOnScreen;
 idStim            = xp.settings.idStim;
@@ -24,7 +24,7 @@ xp.flip;
 while true
 
     % checks
-    [roiFix, timeFix] = xp.checkFix(1+(1:nStimOnScreen), 1/30); % added some padding (1/30 * screen height) to make AOIs bigger
+    [roiFix, timeFix, flagKeyFlip] = xp.checkFix(1+(1:nStimOnScreen), 1/30); % added some padding (1/30 * screen height) to make AOIs bigger
     [durFixIn, flagFixIn, timeFirstIn] = xp.checkROI(roiFix, timeFix);
     flagResult = xp.checkKeyboard;
     flagResult = xp.checkEndTrial(flagResult,roiFix);
@@ -92,5 +92,7 @@ else    % TEST TRIAL, CONFUSED????????????
 end
 
 % events
-xp.eeg.eventSave('look', timeFirstIn_)  % t looked at bottom card which triggered the flip
+xp.trial.varValue.keyFlip = xp.trial.varValue.keyFlip || flagKeyFlip;
+xp.trial.varValue.delayFirstFixB = timeFirstIn_ - timeStepStart;
+xp.eeg.eventSave('fixB', timeFirstIn_)  % t looked at bottom card which triggered the flip
 xp.eeg.eventSave('bcfl', tBottomCardReveal) % t bottom card flips

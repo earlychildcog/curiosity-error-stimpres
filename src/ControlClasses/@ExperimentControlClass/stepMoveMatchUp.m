@@ -38,13 +38,13 @@ while iFrameMovement < nFrameMovement
         rect(:,positionStimMatch) = rectTrajectCard;
         DrawAllCards(xp, stateCards, rect);
         stimOnset = xp.flip(stimOnset + durFrame - durOffset);
+        % events at beginning
+        if iFrameMovement == 1
+            xp.eyelink.write('start move up @%.3fsec',stimOnset);
+            xp.eeg.eventSave('movu', stimOnset); % bottom card moves up
+        end
     end
     
-    % events at beginning
-    if iFrameMovement == 1
-        xp.eyelink.write('start move up @%.3fsec',stimOnset)
-        xp.eeg.eventSave('movu', stimOnset) % bottom card moves up
-    end
 end
 
 %% END STEP

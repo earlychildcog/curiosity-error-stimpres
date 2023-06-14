@@ -11,6 +11,7 @@ function flagResult = stepFam9cards(xp)
 
 % initialise
 flagResult = 0;
+flagKeyFlip = false;
 
 nCards = 8;
 durMaxFamFTrial      = 30;      % when to end trial if no cards are being flipped
@@ -30,13 +31,19 @@ cardPos              = {'Tleft','Tmiddle','Tright',...
     'Bleft','Bmiddle','Bright'};
 DrawAllCards(xp, stateCards);
 tHighlight         = xp.flip;
+
+
+% events
+xp.eyelink.write('trial start @%.3fsec',tTrialStart)
+xp.eeg.eventSave('strt' ,tTrialStart)            % start
+
 %% ACTION LOOP
 % CHECK WHICH CARD IS FLIPPED AND KEEP TRACK OF IT (and the timings)
 % Get how long fixation has been going and whether to switch to a new AOI
 % if fixation is lost, then timer resets to new roi after $timeOut seconds
 while true
     % checks
-    [roiFix, timeFix] = xp.checkFix(famRects, -1/50); % took away some padding (1/50 * screen height) to make AOIs SMALLER
+    [roiFix, timeFix, flagKeyFlip] = xp.checkFix(famRects, -1/50); % took away some padding (1/50 * screen height) to make AOIs SMALLER
     [durFixIn, flagFixIn, timeFirstIn] = xp.checkROI(roiFix, timeFix);
     flagResult = xp.checkKeyboard;
     flagResult = xp.checkEndTrial(flagResult,roiFix);
@@ -83,3 +90,4 @@ while true
         break
     end
 end
+xp.trial.varValue.keyFlip = xp.trial.varValue.keyFlip || flagKeyFlip;

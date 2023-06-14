@@ -1,4 +1,4 @@
-function [flagResult, stateCards, flagCorrect, sideRevealed] = stepTrackBottomAndTiltTop(xp, stateCards)
+function [flagResult, stateCards, flagCorrect] = stepTrackBottomAndTiltTop(xp, stateCards)
 % SAY SEE AND TILT TOP CARD
 % + track gaze on bottom cards, highlight & flip
 % After top card fixated for long enough: flips and tilts
@@ -9,8 +9,8 @@ nStimOnScreen  = xp.settings.nStimOnScreen;
 idStim         = xp.settings.idStim;
 durToHighlight = xp.settings.durToHighlight;
 durMinToFlip   = xp.settings.durMinToFlip;
-
 % initialise
+flagKeyFlip    = false;
 flagCorrect  = false; % if fixated non-match
 flagResult   = 0 ;
 cardPos      = ["left","right","top"];
@@ -39,8 +39,8 @@ timeHighlight   = 0;
 while true
 
     % checks
-    [roiFix, timeFix] = xp.checkFix(1+(1:nStimOnScreen), 1/30); % added some padding (1/30 * screen height) to make AOIs bigger
-    [durFixIn, flagFixIn] = xp.checkROI(roiFix, timeFix);
+    [roiFix, timeFix, flagKeyFlip] = xp.checkFix(1+(1:nStimOnScreen), 1/30); % added some padding (1/30 * screen height) to make AOIs bigger
+    [durFixIn, flagFixIn, timeFirstIn] = xp.checkROI(roiFix, timeFix);
     flagResult = xp.checkKeyboard;
     flagResult = xp.checkEndTrial(flagResult, roiFix);
     if flagResult, return, end
@@ -74,6 +74,7 @@ while true
         xp.sound.which    = xp.sound.data{2,8}; %click
         xp.sound.play;
         timeHighlight     = GetSecs;
+        timeFirstIn_       = timeFirstIn;
     end
     
     % Flip & send to feedback if fixated one of the bottom cards for long enough
@@ -85,7 +86,7 @@ while true
         stateCards(:)  = 2;  % non fixated card is flipped
         stateCards(roiFix) = 3;  % fixated card is flipped AND highlighted
         DrawAllCards(xp, stateCards, []);
-        xp.flip
+        tBottomCardReveal = xp.flip;
         if any(stateCards < 2)
             xp.sound.stop;
             xp.sound.which     = xp.sound.data{2,3}; %flip
@@ -104,3 +105,9 @@ while true
         break
     end
 end
+
+% events
+xp.trial.varValue.keyFlip = xp.trial.varValue.keyFlip || flagKeyFlip;
+xp.trial.varValue.delayFirstFixB = timeFirstIn_ - timeStepStart;
+xp.eeg.eventSave('fixB', timeFirstIn_)  % t looked at bottom card which triggered the flip
+xp.eeg.eventSave('bcfl', tBottomCardReveal) % t bottom card flips

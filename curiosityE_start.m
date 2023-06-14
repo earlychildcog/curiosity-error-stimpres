@@ -1,11 +1,6 @@
 %% Experimental script for the error task of the curiosity longitudinal study
 % Presenting objects on cards in a contingent manner
 %
-% NB: Make sure that development variables are re-sat to proper testing
-%     values before starting to test with a participant:
-%   - eyetrackingOn = true
-%   - eegOn = true
-%   - xp.debug = false
 %
 
 
@@ -44,21 +39,23 @@ end
 function start_main(debug)
 
 %% settings
-if ismac
-    debug = 2;
-end
+
+
+
 xp            = ExperimentControlClass; % main experiment structure
+eyetrackingOn = true;
+eegOn      = true;                   % using EEG?
 
 % checking if debugging (hence no eyetracking/eeg) or not
-xp.debug      = false;
-eyetrackingOn = true;
-xp.eegon      = true;                   % using EEG?
+if ismac        % always use highest debug mode in macos
+    debug = 2;
+end
 if debug > 0
     xp.debug      = true;                   % true keeps keyboard/mouse input, false disables them
 end
 if debug > 1
     eyetrackingOn = false;
-    xp.eegon      = false;                   % using EEG?
+    eegOn      = false;                   % using EEG?
 end
 
 if ismac
@@ -79,7 +76,7 @@ xp.settings.durMaxLookAway      = 10;
 
 xp.settings.timeOut             = 0.1;   % time fixating away to reset fixation timer
 xp.settings.timeOutOfScreenMax  = 5;
-if xp.eegon
+if eegOn
     xp.eeg.init;
 end
 
@@ -169,7 +166,8 @@ end
 
 
 %% trial preparation
-xp.trial.varInit({'trialtype' 'difficulty' 'trialno' 'objL' 'objR' 'objT' 'result' 'durFixFirst' 'trialID' 'accuracy' 'chosenSide'});
+xp.trial.varInit({'trialtype' 'difficulty' 'trialno' 'objL' 'objR' 'objT'...
+    'result' 'delayFirstFixT' 'delayFirstFixT' 'trialID' 'accuracy' 'chosenSide' 'keyFlip'});
 xp.log.init([xp.name xp.session num2str(xp.subject)]);
 
 
@@ -288,6 +286,9 @@ while iTrial < nTrial
     xp.trial.varValue.result     = flagResult;
     xp.trial.varValue.accuracy   = NaN;
     xp.trial.varValue.chosenSide = 'NA';
+    xp.trial.varValue.delayFirstFixT = NaN;
+    xp.trial.varValue.delayFirstFixB = NaN;
+    xp.trial.varValue.keyFlip       = false;
 
     % attention getter part
     flagResultAttget = xp.attgetPart;
@@ -373,10 +374,6 @@ if length(idStim) == 3
     stimMatch = idStim(1:end-1) == idStim(end);
 end
 
-% event start
-xp.eeg.eventSave('strt', GetSecs);
-xp.eyelink.write('trial %d starts', xp.trial.varValue.trialID)
-
 % trial
 [flagResult, flagAccuracy] = trialrun_main(xp, idStim, trialtype);
 xp.trial.flagResult(end+1) = flagResult;
@@ -394,15 +391,12 @@ if ~strcmp(trialtype, 'FamFlip')
     end
     xp.trial.varValue.accuracy    = flagAccuracy;
     xp.trial.varValue.chosenSide  = flagChosenSide;
-    %     xp.trial.varValue.durFixFirst = countFirstROI;
-    xp.trial.varValue.durFixFirst = NaN;
 else
     xp.trial.varValue.accuracy    = NaN;
     xp.trial.varValue.chosenSide  = 'NA';
-    xp.trial.varValue.durFixFirst = NaN;
     flagChosenSide = 'NA';
 end
-xp.eeg.eventSend('type', xp.trial.varValue.trialtype, 'trial', xp.trial.varValue.trialno, 'diff', xp.trial.varValue.difficulty, 'result', flagResult, 'accuracy', flagAccuracy, 'chosenSide', flagChosenSide, 'objL', xp.trial.varValue.objL, 'objR', xp.trial.varValue.objR, 'objT', xp.trial.varValue.objT);
+xp.eeg.eventSend(xp.trial.varValue)
 xp.log.write();
 %fprintf([goodbyeMessage '\n'], flagResult, tTrialEnd)
 xp.erase();
