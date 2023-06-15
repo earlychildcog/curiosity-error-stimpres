@@ -7,7 +7,6 @@ function [flagResult, stateCards, flagCorrect] = stepTrackBottom(xp, trialtype)
 flagResult    = false;
 flagCorrect   = false;
 flagKeyFlip   = false;
-timeStepStart = GetSecs;
 durMax        = 10;   % abort if subject takes too long to flip
 % tracking
 nStimOnScreen     = xp.settings.nStimOnScreen;
@@ -19,7 +18,7 @@ positionStimMatch = find(idStim == idStim(end), 1);
 cardPos           = ["left","right","top"];
 
 DrawAllCards(xp, stateCards);
-xp.flip;
+timeStepStart = xp.flip;
 %% ACTION LOOP
 while true
 

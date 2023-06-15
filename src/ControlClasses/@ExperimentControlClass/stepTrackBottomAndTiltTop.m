@@ -32,7 +32,7 @@ xp.sound.which  = xp.sound.data{2,9};
 xp.sound.play;
 
 
-timeBeginMatch  = GetSecs;
+timeStepStart  = GetSecs;
 timeHighlight   = 0;
 
 %% ACTION LOOP
@@ -59,7 +59,7 @@ while true
     % HIGHLIGHT
     if roiFix > 0 && (stateCards(roiFix) == 0 || stateCards(roiFix) == 2) &&...
             durFixIn > durToHighlight && flagFixIn &&...
-            roiFix < nStimOnScreen && (GetSecs - timeBeginMatch) > .7
+            roiFix < nStimOnScreen && (GetSecs - timeStepStart) > .7
         if stateCards(roiFix) == 0
             stateCards(1:end-1) = 0;
             stateCards(roiFix) = 1;   % fixated card is highlighted
