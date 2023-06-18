@@ -1,4 +1,17 @@
 todo
+
+
+- [x] fam trials to repeat on opposite sides to the bias (nonbias - bias - nonbias - bias)
+- [x] fam trials appear when 4 times to same side and at least 2 incorrect ones
+- [x] add extra hard diff level
+- [ ] make online randomisation of side of correct answer so L-R appear sort of similar times (twice at least every five trials?)
+- [ ] no more two in the row the same side (or: we think it should be max. 3 times to the same side in a row (and not 2 like we discussed earlier), so it’s still hard to predict)
+- [x] N trials to finish the study should be 50 test trials (right now it is 40 including fam trials)
+- [x] export trial variable for all the objects shown (in the order) --- changed objT in FamFlip to include the rest of the objects
+
+- [ ] write an explicit array of strings for each `flagResult` code (make it a table)
+
+# old
  
 - [ ] Add randomisation per subject.
 - [ ] Add funkier fixation crosses, randomised, displayed on same background.

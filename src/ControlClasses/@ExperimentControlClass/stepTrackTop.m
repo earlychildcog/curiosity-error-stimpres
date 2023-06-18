@@ -64,7 +64,7 @@ end
 
 %% events
 
-xp.trial.varValue.keyFlip = xp.trial.varValue.keyFlip || flagKeyFlip;
+xp.trial.varValue.keyboardFlip = xp.trial.varValue.keyboardFlip || flagKeyFlip;
 xp.trial.varValue.delayFirstFixT = timeFirstIn_ - timeStepStart;
 xp.eeg.eventSave('fixT', timeFirstIn_)  % t looked at bottom card which triggered the flip
 xp.eeg.eventSave('tcfl', tTopCardUp) % top card faces up

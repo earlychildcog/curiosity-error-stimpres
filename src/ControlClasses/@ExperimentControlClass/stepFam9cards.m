@@ -90,4 +90,4 @@ while true
         break
     end
 end
-xp.trial.varValue.keyFlip = xp.trial.varValue.keyFlip || flagKeyFlip;
+xp.trial.varValue.keyboardFlip = xp.trial.varValue.keyboardFlip || flagKeyFlip;

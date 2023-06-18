@@ -81,7 +81,7 @@ while true
     if  roiFix > 0 && (stateCards(roiFix) == 1 || stateCards(roiFix) == 3) ...
             && durFixIn > durMinToFlip && (GetSecs - timeHighlight) > durMinToFlip && flagFixIn
         % save which side was revelaed
-        xp.trial.sideRevealed(end+1) = cardPos(roiFix);
+        xp.trial.sideRevealed(end+1) = roiFix;
         % Flip
         stateCards(:)  = 2;  % non fixated card is flipped
         stateCards(roiFix) = 3;  % fixated card is flipped AND highlighted
@@ -107,7 +107,7 @@ while true
 end
 
 % events
-xp.trial.varValue.keyFlip = xp.trial.varValue.keyFlip || flagKeyFlip;
+xp.trial.varValue.keyboardFlip = xp.trial.varValue.keyboardFlip || flagKeyFlip;
 xp.trial.varValue.delayFirstFixB = timeFirstIn_ - timeStepStart;
 xp.eeg.eventSave('fixB', timeFirstIn_)  % t looked at bottom card which triggered the flip
 xp.eeg.eventSave('bcfl', tBottomCardReveal) % t bottom card flips
