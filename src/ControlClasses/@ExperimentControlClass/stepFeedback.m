@@ -38,6 +38,11 @@ positionStimMatch = find(idStim == idStim(end), 1);
 k2 = 1;
 rectTrajectCard  = round(xp.screen.rect(:, 1 + positionStimMatch) * (1-k2) + k2 * [xp.screen.rect(:,1 + 4*nStimOnScreen + positionStimMatch)]);
 
+if startsWith(xp.trial.varValue.trialtype, 'FamMatch')
+    iFolderImages = 4;
+else
+    iFolderImages = 5;
+end
 % wait for 500ms
 WaitSecs(0.5)
 %% ACTION LOOP
@@ -105,17 +110,17 @@ while iFrameMovement < nFrameMovement
                     rectC(:,iObject) = xp.screen.rect(:,1 + iObject);
                     rectO(:,iObject) = xp.screen.rect(:,1 + nStimOnScreen + iObject);
                     tC(iObject)      = xp.image.texture{3,3};
-                    tO(iObject)      = xp.image.texture{5,idStim(iObject)};
+                    tO(iObject)      = xp.image.texture{iFolderImages,idStim(iObject)};
                 elseif cardsPos(iObject) == 2 && iObject == positionStimMatch % bottom card that moved up
                     rectC(:,iObject) = xp.screen.rect(:, 1 + 4*nStimOnScreen + iObject);
                     rectO(:,iObject) = xp.screen.rect(:, 1 + 4*nStimOnScreen + 2 + iObject);
                     tC(iObject)      = xp.image.texture{3,3};
-                    tO(iObject)      = xp.image.texture{5,idStim(iObject)};
+                    tO(iObject)      = xp.image.texture{iFolderImages,idStim(iObject)};
                 elseif cardsPos(iObject) == 1 && stateCards(iObject) > 0 % bottom, face up
                     rectC(:,iObject) = xp.screen.rect(:, 1 + iObject); %#ok<*AGROW>
                     rectO(:,iObject) = xp.screen.rect(:, 1 + nStimOnScreen + iObject);
                     tC(iObject)      = xp.image.texture{3,3};
-                    tO(iObject)      = xp.image.texture{5,idStim(iObject)};
+                    tO(iObject)      = xp.image.texture{iFolderImages,idStim(iObject)};
                 elseif cardsPos(iObject) == 1 && stateCards(iObject) == 0    % bottom, face down
                     rectC(:,iObject) = xp.screen.rect(:, 1 + iObject);
                     rectO(:,iObject) = xp.screen.rect(:, 1 + iObject);

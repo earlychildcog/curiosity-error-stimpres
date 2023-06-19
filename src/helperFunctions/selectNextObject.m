@@ -14,17 +14,22 @@ assert(sum(tableTest.playedLast) <= 1, 'should be at most one row marked as "pla
 if any(tableTest.playedLast) % if we have played a trial, we have check not to repeat category
     % now the serious check if we replay category
     % old and new categories
-    categoriesLast = extractBetween(tableTest{tableTest.playedLast, ["objL" "objR"]}, 1,1);
-    categoriesNow = extractBetween(tableTest{iRow, ["objL" "objR"]}, 1,1);
-
+    if endsWith(difficulty, "Hard")     % if hard do not repeat general category
+        nCharCategory = 1;
+    else                                % if not hard, do not repeat specific subcategory
+        nCharCategory = 3;
+    end
+    categoriesLast = extractBetween(tableTest{tableTest.playedLast, ["objL" "objR"]}, 1,nCharCategory);
+    categoriesNow = extractBetween(tableTest{iRow, ["objL" "objR"]}, 1,nCharCategory);
     colourLast = extractBetween(tableTest{tableTest.playedLast, ["objL" "objR"]}, 5,5);
     colourNow = extractBetween(tableTest{iRow, ["objL" "objR"]}, 5,5);
 
-    while any(categoriesNow == categoriesLast', [1 2])      % we check if we detect category conflict; if so, we search for another candidate
+    while any(categoriesNow == categoriesLast', [1 2]) || any(colourNow == colourLast', [1 2])     % we check if we detect category conflict; if so, we search for another candidate
         count = count + 1;
         if count <= length(iRows)
             iRow = iRows(count);
-            categoriesNow = extractBetween(tableTest{iRow, ["objL" "objR"]}, 1,1);
+            categoriesNow = extractBetween(tableTest{iRow, ["objL" "objR"]}, 1,nCharCategory);
+            colourNow = extractBetween(tableTest{iRow, ["objL" "objR"]}, 5,5);
         else
             if minplayed < maxplayed        % we go to the rows that have been played more
                 minplayed = minplayed + 1;

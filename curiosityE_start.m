@@ -167,13 +167,15 @@ end
 
 %% trial preparation
 xp.trial.varInit({'trialtype' 'difficulty' 'trialno' 'objL' 'objR' 'objT'...
-    'result' 'delayFirstFixT' 'delayFirstFixT' 'trialID' 'accuracy' 'chosenSide' 'keyboardFlip'});
+    'result' 'delayFirstFixT' 'delayFirstFixB' 'trialID' 'accuracy' 'sideMatch' 'sideChosen' 'keyboardFlip'});
 xp.log.init([xp.name xp.session num2str(xp.subject)]);
 
+sides      = {'left','right','NA'};
 
 xp.eeg.startrec;
 
-fileRando = sprintf('rand/StimOrder_Example.csv');
+
+fileRando = sprintf('rand/StimOrder_Subj%03d_Session%d.csv',xp.subject, xp.sessionNo);
 opts = detectImportOptions(fileRando);
 opts.VariableTypes = strrep(opts.VariableTypes, 'char', 'string');      % load replace char encoding to string encoding for simplicity in the code later
 % fileRando = sprintf('rand/StimOrder_00test_ExtraFam.csv');
@@ -184,6 +186,10 @@ tableFam = readtable(fileRando, opts);
 tableTest = tableFam(tableFam.TrialType == "Test", 1:5);
 tableFam = tableFam(tableFam.TrialType ~= "Test", :);
 tableFam.trialID = (1:size(tableFam,1))';
+tableFam.playedTimes = zeros(size(tableFam.Difficulty));
+tableFam.playedLast = false(size(tableFam.Difficulty));
+tableFam.Properties.VariableNames(3:5) = ["objL" "objR" "objT"];
+
 % RandomisationTest = readtable(fileScaling);
 tableTest.playedTimes = zeros(size(tableTest,1),1);        % will save how many time each row has been played
 tableTest.playedLast = false(size(tableTest,1),1);        % will save which row played last
@@ -219,7 +225,7 @@ while iTrial < nTrial
         if size(xp.trial.sideRevealed,2) > 3
             % check if always looking to the same side in the last 4
             % trials when revelaed something
-            flagRepeatFam = numel(unique(xp.trial.sideRevealed(end-3:end))) == 1;
+            flagRepeatFam = numel(unique(xp.trial.sideRevealed(end-3:end))) == 1 && sum(xp.trial.flagAccuracy(end-3:end) == 0) >= 2;
             if flagRepeatFam
                 sideBiased = xp.trial.sideRevealed(end);
             end
@@ -253,7 +259,7 @@ while iTrial < nTrial
     %    0: nothing
     %    6: ended trial, repeating it because not enough cards were flipped (FamFlip trials only)
 
-
+    
     if iTrial <= 2
         trialtype        = tableFam.TrialType{iTrial};
         idStimInPosition_ = tableFam{iTrial, 3:10};
@@ -266,21 +272,23 @@ while iTrial < nTrial
         if iTrial <= 4
             trialtype = [trialtype 'Chance'];   % if we give a second chance or not ---> we may need to specify more cases when to do that
         end
-        idStimInPosition_ = tableFam{iTrial,["obj1" "obj2" "obj3"]};
+        tableFam           = selectNextObject(tableFam, "FamEasy");
+        idStimInPosition_ = tableFam{tableFam.playedLast,["objL" "objR" "objT"]};
         idStimInPosition_(3) = idStimInPosition_(randi(2));       % to change
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
-        difficulty       = tableFam.Difficulty{iTrial};
-        trialID          = tableFam.trialID(iTrial);
-        fprintf('fam-match trial id %d\n', iTrial)
+        difficulty       = tableFam.Difficulty{tableFam.playedLast};
+        trialID          = tableFam.trialID(tableFam.playedLast);
+        fprintf('fam-match trial %d id %d\n', iTrial, find(tableFam.playedLast))
     elseif flagRepeatFam
         % /!\ need a loop run var to run through the fam trials
         trialtype        = tableFam.TrialType{iFamRepeatTrial+2};
-        idStimInPosition_ = tableFam{iTrial,["obj1" "obj2" "obj3"]};
+        tableFam         = selectNextObject(tableFam, "FamEasy");
+        idStimInPosition_ = tableFam{tableFam.playedLast,["objL" "objR" "objT"]};
         idStimInPosition_(3) = idStimInPosition_(randi(2));       % to change
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
-        difficulty       = tableFam.Difficulty{iFamRepeatTrial+2};
-        trialID          = tableFam.trialID(iFamRepeatTrial+2);
-        fprintf('fam-match trial id %d (anti-bias repeatition)\n', iFamRepeatTrial+2)
+        difficulty       = tableFam.Difficulty{tableFam.playedLast};
+        trialID          = tableFam.trialID(tableFam.playedLast);
+        fprintf('fam-match trial %d id %d (anti-bias repeatition)\n', iFamRepeatTrial+2,find(tableFam.playedLast))
         % set the non-biased side match
         isBiased = find(idStimInPosition == idStimInPosition(3),1) == sideBiased;
         if (isBiased && mod(iFamRepeatTrial,2)==1) || (~isBiased && mod(iFamRepeatTrial,2)==0) % we play bias - nonbias - bias - nonbias
@@ -312,7 +320,8 @@ while iTrial < nTrial
     xp.trial.varValue.objT       = strcat(idStimInPosition_{3:end});    % so that in FamFlip it gathers the rest of the objects
     xp.trial.varValue.result     = flagResult;
     xp.trial.varValue.accuracy   = NaN;
-    xp.trial.varValue.chosenSide = 'NA';
+    xp.trial.varValue.sideMatch = sides{3-2*strcmp(xp.trial.varValue.objL,xp.trial.varValue.objT) - strcmp(xp.trial.varValue.objR, xp.trial.varValue.objT)};
+    xp.trial.varValue.sideChosen = 'NA';
     xp.trial.varValue.delayFirstFixT = NaN;
     xp.trial.varValue.delayFirstFixB = NaN;
     xp.trial.varValue.keyboardFlip       = false;
@@ -404,24 +413,25 @@ end
 % trial
 [flagResult, flagAccuracy] = trialrun_main(xp, idStim, trialtype);
 xp.trial.flagResult(end+1) = flagResult;
+xp.trial.flagAccuracy(end+1) = flagAccuracy;
 
 goodbyeMessage    = 'end:result %d @%.3f';
 tTrialEnd = GetSecs;
 xp.eyelink.write(goodbyeMessage, flagResult, tTrialEnd);
 xp.eeg.eventSave('endT', tTrialEnd);
 if ~strcmp(trialtype, 'FamFlip')
-    sides      = {'left','right'};
+    sides      = {'left','right','NA'};
     if flagAccuracy
-        flagChosenSide = sides{stimMatch};
+        flagSideChosen = sides{stimMatch};
     else
-        flagChosenSide = sides{~stimMatch};
+        flagSideChosen = sides{~stimMatch};
     end
     xp.trial.varValue.accuracy    = flagAccuracy;
-    xp.trial.varValue.chosenSide  = flagChosenSide;
+    xp.trial.varValue.sideChosen  = flagSideChosen;
 else
     xp.trial.varValue.accuracy    = NaN;
-    xp.trial.varValue.chosenSide  = 'NA';
-    flagChosenSide = 'NA';
+    xp.trial.varValue.sideChosen  = 'NA';
+    flagSideChosen = 'NA';
 end
 xp.eeg.eventSend(xp.trial.varValue)
 xp.log.write();

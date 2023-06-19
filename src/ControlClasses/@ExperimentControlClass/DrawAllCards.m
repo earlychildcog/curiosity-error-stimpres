@@ -16,16 +16,20 @@ end
 if nargin<4 || isempty(angle)
     angle = zeros(size(stateCards));
 end
-
+if startsWith(xp.trial.varValue.trialtype, 'FamMatch')
+    iFolderImages = 4;
+else
+    iFolderImages = 5;
+end
 Screen('DrawTexture', xp.screen.win, xp.image.texture{1,1}, [], xp.screen.rect(:,1));        % background
 
 for iObject = 1:length(stateCards)
-    tx = xp.image.texture{3,stateCards(iObject)+1};
-    Screen('DrawTexture', xp.screen.win, tx, [], rectCards(:,iObject)', angle(iObject), []); % card frame
-    if stateCards(iObject) >= 2                                                
+    txFrame = xp.image.texture{3,stateCards(iObject)+1};
+    Screen('DrawTexture', xp.screen.win, txFrame, [], rectCards(:,iObject)', angle(iObject), []); % card frame
+    if stateCards(iObject) >= 2
         rect = rectCards(:,iObject) + xp.settings.padding;                                   % card content if up
-        tx = xp.image.texture{5,xp.settings.idStim(iObject)};
-        Screen('DrawTexture', xp.screen.win, tx, [], rect,angle(iObject));
+        txObj = xp.image.texture{iFolderImages,xp.settings.idStim(iObject)};
+        Screen('DrawTexture', xp.screen.win, txObj, [], rect,angle(iObject));
     end
 end
 

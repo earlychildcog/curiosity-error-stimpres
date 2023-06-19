@@ -3,6 +3,7 @@ classdef TrialControlClass < TrialControlClassBase
     %   Detailed explanation goes here
     
     properties        
+        flagAccuracy
     end
     
     methods
