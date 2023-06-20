@@ -170,7 +170,7 @@ xp.trial.varInit({'trialtype' 'difficulty' 'trialno' 'objL' 'objR' 'objT'...
     'result' 'delayFirstFixT' 'delayFirstFixB' 'trialID' 'accuracy' 'sideMatch' 'sideChosen' 'keyboardFlip'});
 xp.log.init([xp.name xp.session num2str(xp.subject)]);
 
-sides      = {'left','right','NA'};
+nameSides      = {'left','right','NA'};
 
 xp.eeg.startrec;
 
@@ -186,24 +186,26 @@ tableFam = readtable(fileRando, opts);
 tableTest = tableFam(tableFam.TrialType == "Test", 1:5);
 tableFam = tableFam(tableFam.TrialType ~= "Test", :);
 tableFam.trialID = (1:size(tableFam,1))';
-tableFam.playedTimes = zeros(size(tableFam.Difficulty));
-tableFam.playedLast = false(size(tableFam.Difficulty));
+tableFam.playedTimes = zeros(size(tableFam,1),2);
+tableFam.playing = zeros(size(tableFam,1),1);
 tableFam.Properties.VariableNames(3:5) = ["objL" "objR" "objT"];
 
 % RandomisationTest = readtable(fileScaling);
-tableTest.playedTimes = zeros(size(tableTest,1),1);        % will save how many time each row has been played
-tableTest.playedLast = false(size(tableTest,1),1);        % will save which row played last
+tableTest.playedTimes = zeros(size(tableTest,1),2);        % will save how many time each row has been played
+tableTest.playing = zeros(size(tableTest,1),1);        % will save which row played last
 tableTest.trialID = (1:size(tableTest,1))';
 tableTest.Properties.VariableNames(3:5) = ["objL" "objR" "objT"];
-randT = rand([size(tableTest,1) 1]) > 0.5;      % to change after
-tableTest.objT(randT) = tableTest.objL(randT);
-tableTest.objT(~randT) = tableTest.objR(~randT);
+% randT = rand([size(tableTest,1) 1]) > 0.5;      % to change after
+% tableTest.objT(randT) = tableTest.objL(randT);
+% tableTest.objT(~randT) = tableTest.objR(~randT);
 
 nameObjFam = arrayfun(@(x)string(x.name), dir("stimuli/images/04-ObjFamMatch/*.png"));
 nameObjTest = arrayfun(@(x)string(x.name), dir("stimuli/images/05-ObjTest/*.png"));
 
 levels  = [0 0 1];
 success = [0 0 0];
+sides = randi(2);
+
 difficulties = ["Easy" "Medium" "Hard" "xHard"];
 
 iFamRepeatTrial = 99;       % just 
@@ -263,46 +265,65 @@ while iTrial < nTrial
     if iTrial <= 2
         trialtype        = tableFam.TrialType{iTrial};
         idStimInPosition_ = tableFam{iTrial, 3:10};
+        idStimInPosition_ = idStimInPosition_(randperm(length(idStimInPosition_)));
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjTest, 1:length(idStimInPosition_));
         difficulty       = tableFam.Difficulty{iTrial};
         trialID          = tableFam.trialID(iTrial);
         fprintf('fam-flip trial id %d\n', iTrial)
     elseif iTrial <= nFam
+        if iTrial > 3
+            sides(end+1) = 3-sides(end); %#ok<AGROW>
+        end
         trialtype        = tableFam.TrialType{iTrial};
         if iTrial <= 4
             trialtype = [trialtype 'Chance'];   % if we give a second chance or not ---> we may need to specify more cases when to do that
         end
         tableFam           = selectNextObject(tableFam, "FamEasy");
-        idStimInPosition_ = tableFam{tableFam.playedLast,["objL" "objR" "objT"]};
-        idStimInPosition_(3) = idStimInPosition_(randi(2));       % to change
+        idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
+        idStimInPosition_(end) = idStimInPosition_(sides(end));
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
-        difficulty       = tableFam.Difficulty{tableFam.playedLast};
-        trialID          = tableFam.trialID(tableFam.playedLast);
-        fprintf('fam-match trial %d id %d\n', iTrial, find(tableFam.playedLast))
+        difficulty       = tableFam.Difficulty{tableFam.playing>0};
+        trialID          = tableFam.trialID(tableFam.playing>0);
+        fprintf('fam-match trial %d id %d\n', iTrial, find(tableFam.playing>0))
     elseif flagRepeatFam
+        sides(end+1) = 3-sides(end); %#ok<AGROW>
         % /!\ need a loop run var to run through the fam trials
         trialtype        = tableFam.TrialType{iFamRepeatTrial+2};
         tableFam         = selectNextObject(tableFam, "FamEasy");
-        idStimInPosition_ = tableFam{tableFam.playedLast,["objL" "objR" "objT"]};
-        idStimInPosition_(3) = idStimInPosition_(randi(2));       % to change
+        idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
+        idStimInPosition_(3) = idStimInPosition_(sides(end));       % to change
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
-        difficulty       = tableFam.Difficulty{tableFam.playedLast};
-        trialID          = tableFam.trialID(tableFam.playedLast);
-        fprintf('fam-match trial %d id %d (anti-bias repeatition)\n', iFamRepeatTrial+2,find(tableFam.playedLast))
+        difficulty       = tableFam.Difficulty{tableFam.playing>0};
+        trialID          = tableFam.trialID(tableFam.playing>0);
+        fprintf('fam-match trial %d id %d (anti-bias repeatition)\n', iFamRepeatTrial+2,find(tableFam.playing>0))
         % set the non-biased side match
         isBiased = find(idStimInPosition == idStimInPosition(3),1) == sideBiased;
         if (isBiased && mod(iFamRepeatTrial,2)==1) || (~isBiased && mod(iFamRepeatTrial,2)==0) % we play bias - nonbias - bias - nonbias
             idStimInPosition(1:2) = idStimInPosition(2:1);
+            idStimInPosition_(1:2) = idStimInPosition_(2:1);
         end
+        sides(end) = find(idStimInPosition(1:end-1) == idStimInPosition(end),1);
     else
         trialtype = 'Test';
+        if all(sides(end-2:end) == 1)
+            sides(end+1) = 2;                               %#ok<AGROW>
+        elseif all(sides(end-2:end) == 2)
+            sides(end+1) = 1;                               %#ok<AGROW>
+        elseif length(sides) > 9    % this part tries to equalise  the frequency of sides appearing a bit more
+            sides(end+1) = 1+(rand() > mean(sides == 2));                        %#ok<AGROW>
+        else      
+            sides(end+1) = randi(2);                        %#ok<AGROW>
+        end
         %get new level, check how good the subject has been in previous trials
         [levels, success]   = getDifficultyLevel(levels, success, length(difficulties));
         difficulty          = difficulties(levels(end));    % we get new difficulty
-        tableTest           = selectNextObject(tableTest, difficulty);
-        idStimInPosition_   = tableTest{tableTest.playedLast, ["objL" "objR" "objT"]}; 
+        tableTest                  = selectNextObject(tableTest, difficulty);
+        idStimInPosition_   = tableTest{tableTest.playing>0, ["objL" "objR" "objT"]}; 
+        if sides(end) ~= find(idStimInPosition_(1:end-1) == idStimInPosition_(end),1)
+            idStimInPosition_(1:2) = idStimInPosition_(2:1);
+        end
         idStimInPosition    = splitapply(@find, idStimInPosition_ == nameObjTest, 1:length(idStimInPosition_));
-        trialID             = tableTest.trialID(tableTest.playedLast);
+        trialID             = tableTest.trialID(tableTest.playing>0);
         fprintf('test trial id %d: difficulty %s, previous successes %d %d %d, previous levels %d %d %d, objects:\n', trialID, difficulty, success, levels)
         for i=1:length(idStimInPosition_)
             fprintf('%s\n', idStimInPosition_{i});
@@ -320,7 +341,7 @@ while iTrial < nTrial
     xp.trial.varValue.objT       = strcat(idStimInPosition_{3:end});    % so that in FamFlip it gathers the rest of the objects
     xp.trial.varValue.result     = flagResult;
     xp.trial.varValue.accuracy   = NaN;
-    xp.trial.varValue.sideMatch = sides{3-2*strcmp(xp.trial.varValue.objL,xp.trial.varValue.objT) - strcmp(xp.trial.varValue.objR, xp.trial.varValue.objT)};
+    xp.trial.varValue.sideMatch = nameSides{3-2*strcmp(xp.trial.varValue.objL,xp.trial.varValue.objT) - strcmp(xp.trial.varValue.objR, xp.trial.varValue.objT)};
     xp.trial.varValue.sideChosen = 'NA';
     xp.trial.varValue.delayFirstFixT = NaN;
     xp.trial.varValue.delayFirstFixB = NaN;
@@ -372,7 +393,7 @@ while iTrial < nTrial
     if flagRepeat || flagRepeatFam
         % if strcmp(trialtype, 'Test')
             nTrial = nTrial + 1;
-            tableTest.playedTimes(tableTest.playedLast) = tableTest.playedTimes(tableTest.playedLast) - 0.5;
+            tableTest.playedTimes(tableTest.playing>0) = tableTest.playedTimes(tableTest.playing>0) - 0.5;
             fprintf('trial added, total number of trials %d\n',nTrial)
         % else
         %     iTrial = iTrial - 1;            % repeat fam trials

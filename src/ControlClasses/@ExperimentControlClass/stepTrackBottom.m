@@ -68,8 +68,10 @@ while true
             else
                 xp.sound.which = xp.sound.data{2,5}; %Uh-Oh
             end
-            xp.sound.play;
+        else
+            xp.sound.which = xp.sound.data{2,3};
         end
+        xp.sound.play;
         break
     end
 end

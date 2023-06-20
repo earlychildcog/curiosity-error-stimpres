@@ -27,7 +27,7 @@ nFrameMovement  = length(KAngle);
 stimOnset       = GetSecs;
 
 % sound (see)
-xp.sound.stop;
+% xp.sound.stop;
 xp.sound.which  = xp.sound.data{2,9};
 xp.sound.play;
 
@@ -83,15 +83,15 @@ while true
         % save which side was revelaed
         xp.trial.sideRevealed(end+1) = roiFix;
         % Flip
-        stateCards(:)  = 2;  % non fixated card is flipped
-        stateCards(roiFix) = 3;  % fixated card is flipped AND highlighted
-        DrawAllCards(xp, stateCards, []);
-        tBottomCardReveal = xp.flip;
         if any(stateCards < 2)
             xp.sound.stop;
             xp.sound.which     = xp.sound.data{2,3}; %flip
             xp.sound.play;
         end
+        stateCards(:)  = 2;  % non fixated card is flipped
+        stateCards(roiFix) = 3;  % fixated card is flipped AND highlighted
+        DrawAllCards(xp, stateCards, []);
+        tBottomCardReveal = xp.flip;
         % FINISH UP
         if idStim(roiFix)==idStim(nStimOnScreen) % if fixated match
             xp.sound.which  = xp.sound.data{2,4};

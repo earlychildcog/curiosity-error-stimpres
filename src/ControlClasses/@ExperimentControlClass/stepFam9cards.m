@@ -18,6 +18,7 @@ durMaxFamFTrial      = 30;      % when to end trial if no cards are being flippe
 durMaxNoFlipEndTrial = 7;      %for how long there should be no flip to end the trial
 
 tTurnUp = GetSecs;
+tComplete = NaN;
 stateCards = zeros(1,nCards);
 flippedCards = stateCards;
 % nStimOnScreen = xp.settings.nStimOnScreen;
@@ -80,10 +81,14 @@ while true
         xp.sound.play;
     end
 
+    if sum(flippedCards) == nCards && isnan(tComplete)
+        tComplete = tTurnUp;
+    end
+
     % Terminate when:
     % trial duration >30s and there has been no new flip for >7s: move to next one if flipped >= 3 cards, else repeat
     % OR flipped all cards > 3s ago: move one (NEVER SEEMS TO HAPPEN)
-    if (GetSecs >= tTrialStart + durMaxFamFTrial && GetSecs >= tTurnUp + durMaxNoFlipEndTrial) || (sum(flippedCards) == nCards && GetSecs >= tTurnUp + 3)
+    if (GetSecs >= tTrialStart + durMaxFamFTrial && GetSecs >= tTurnUp + durMaxNoFlipEndTrial) || (sum(flippedCards) == nCards && GetSecs >= tComplete + 3)
         if sum(flippedCards) < 3
             flagResult   = 6;
         end
