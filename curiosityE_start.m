@@ -289,6 +289,9 @@ while iTrial < nTrial
         sides(end+1) = 3-sides(end); %#ok<AGROW>
         % /!\ need a loop run var to run through the fam trials
         trialtype        = tableFam.TrialType{iFamRepeatTrial+2};
+        if iFamRepeatTrial <= 2
+            trialtype = [trialtype 'Chance'];   % if we give a second chance or not ---> we may need to specify more cases when to do that
+        end
         tableFam         = selectNextObject(tableFam, "FamEasy");
         idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
         idStimInPosition_(3) = idStimInPosition_(sides(end));       % to change
@@ -299,8 +302,8 @@ while iTrial < nTrial
         % set the non-biased side match
         isBiased = find(idStimInPosition == idStimInPosition(3),1) == sideBiased;
         if (isBiased && mod(iFamRepeatTrial,2)==1) || (~isBiased && mod(iFamRepeatTrial,2)==0) % we play bias - nonbias - bias - nonbias
-            idStimInPosition(1:2) = idStimInPosition(2:1);
-            idStimInPosition_(1:2) = idStimInPosition_(2:1);
+            idStimInPosition(1:2) = idStimInPosition(2:-1:1);
+            idStimInPosition_(1:2) = idStimInPosition_(2:-1:1);
         end
         sides(end) = find(idStimInPosition(1:end-1) == idStimInPosition(end),1);
     else
@@ -320,7 +323,7 @@ while iTrial < nTrial
         tableTest                  = selectNextObject(tableTest, difficulty);
         idStimInPosition_   = tableTest{tableTest.playing>0, ["objL" "objR" "objT"]}; 
         if sides(end) ~= find(idStimInPosition_(1:end-1) == idStimInPosition_(end),1)
-            idStimInPosition_(1:2) = idStimInPosition_(2:1);
+            idStimInPosition_([1 2]) = idStimInPosition_([2 1]);
         end
         idStimInPosition    = splitapply(@find, idStimInPosition_ == nameObjTest, 1:length(idStimInPosition_));
         trialID             = tableTest.trialID(tableTest.playing>0);
@@ -376,6 +379,10 @@ while iTrial < nTrial
     % set repeat trial flag (push a new trial at the end)
     if any(flagResult == [ (-25:-21) -6 -5 -4 -3  -1 ]) && strcmp(trialtype, 'Test')
         flagRepeat = true;
+    elseif strcmp(trialtype, 'FamFlip')
+        if any(flagResult == [ (-25:-21) 6 ])
+            flagRepeat = true;
+        end
     elseif any(flagResult == [ (-25:-21) -6 -5 -4 -1 6 ]) && ~strcmp(trialtype, 'Test')
         flagRepeat = true;
     end
@@ -391,14 +398,14 @@ while iTrial < nTrial
 
     % repeat trial, test
     if flagRepeat || flagRepeatFam
-        % if strcmp(trialtype, 'Test')
+        if startsWith(trialtype, 'Fam') && flagRepeat
+            iTrial = iTrial - 1;            % repeat fam trials
+            fprintf('repeat fam trial %d again now\n',iTrial)
+        else
             nTrial = nTrial + 1;
             tableTest.playedTimes(tableTest.playing>0) = tableTest.playedTimes(tableTest.playing>0) - 0.5;
             fprintf('trial added, total number of trials %d\n',nTrial)
-        % else
-        %     iTrial = iTrial - 1;            % repeat fam trials
-        %     fprintf('repeat fam trial %d\n',iTrial)
-        % end
+        end
     end
     if flagResult == -1
         xp.eyelink.calibrate;
@@ -454,7 +461,7 @@ else
     xp.trial.varValue.sideChosen  = 'NA';
     flagSideChosen = 'NA';
 end
-xp.eeg.eventSend(xp.trial.varValue)
+xp.eeg.eventSendAll(xp.trial.varValue)
 xp.log.write();
 %fprintf([goodbyeMessage '\n'], flagResult, tTrialEnd)
 xp.erase();

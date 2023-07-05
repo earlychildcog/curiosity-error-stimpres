@@ -22,7 +22,9 @@ while true
     [durFixIn, flagFixIn, timeFirstIn] = xp.checkROI(roiFix, timeFix);
     flagResult = xp.checkKeyboard;
     flagResult = xp.checkEndTrial(flagResult, roiFix);
-    flagResult = xp.checkEndStep(flagResult, timeStepStart, durMax);
+    if roiFix ~= nStimOnScreen
+        flagResult = xp.checkEndStep(flagResult, timeStepStart, durMax);
+    end
     if flagResult, return, end
 
 
