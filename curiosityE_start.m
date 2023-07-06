@@ -269,7 +269,7 @@ while iTrial < nTrial
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjTest, 1:length(idStimInPosition_));
         difficulty       = tableFam.Difficulty{iTrial};
         trialID          = tableFam.trialID(iTrial);
-        fprintf('fam-flip trial id %d\n', iTrial)
+        fprintf('fam-flip trial number %d\n', iTrial)
     elseif iTrial <= nFam
         if iTrial > 3
             sides(end+1) = 3-sides(end); %#ok<AGROW>
@@ -284,7 +284,7 @@ while iTrial < nTrial
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
         difficulty       = tableFam.Difficulty{tableFam.playing>0};
         trialID          = tableFam.trialID(tableFam.playing>0);
-        fprintf('fam-match trial %d id %d\n', iTrial, find(tableFam.playing>0))
+        fprintf('fam-match trial %d number %d\n', iTrial, find(tableFam.playing>0))
     elseif flagRepeatFam
         sides(end+1) = 3-sides(end); %#ok<AGROW>
         % /!\ need a loop run var to run through the fam trials
@@ -298,7 +298,7 @@ while iTrial < nTrial
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
         difficulty       = tableFam.Difficulty{tableFam.playing>0};
         trialID          = tableFam.trialID(tableFam.playing>0);
-        fprintf('fam-match trial %d id %d (anti-bias repeatition)\n', iFamRepeatTrial+2,find(tableFam.playing>0))
+        fprintf('fam-match repeat %d trial number %d (anti-bias repeatition)\n', iFamRepeatTrial+2,find(tableFam.playing>0))
         % set the non-biased side match
         isBiased = find(idStimInPosition == idStimInPosition(3),1) == sideBiased;
         if (isBiased && mod(iFamRepeatTrial,2)==1) || (~isBiased && mod(iFamRepeatTrial,2)==0) % we play bias - nonbias - bias - nonbias
@@ -327,7 +327,7 @@ while iTrial < nTrial
         end
         idStimInPosition    = splitapply(@find, idStimInPosition_ == nameObjTest, 1:length(idStimInPosition_));
         trialID             = tableTest.trialID(tableTest.playing>0);
-        fprintf('test trial id %d: difficulty %s, previous successes %d %d %d, previous levels %d %d %d, objects:\n', trialID, difficulty, success, levels)
+        fprintf('test trial number %d: difficulty %s, previous successes %d %d %d, previous levels %d %d %d, objects:\n', trialID, difficulty, success, levels)
         for i=1:length(idStimInPosition_)
             fprintf('%s\n', idStimInPosition_{i});
         end
