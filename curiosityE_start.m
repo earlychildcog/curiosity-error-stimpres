@@ -327,7 +327,7 @@ while iTrial < nTrial
         end
         idStimInPosition    = splitapply(@find, idStimInPosition_ == nameObjTest, 1:length(idStimInPosition_));
         trialID             = tableTest.trialID(tableTest.playing>0);
-        fprintf('test trial number %d: difficulty %s, previous successes %d %d %d, previous levels %d %d %d, objects:\n', trialID, difficulty, success, levels)
+        fprintf('test trial number %d: difficulty %s, previous successes %d %d %d, previous levels %d %d %d, objects:\n', iTrial, difficulty, success, levels)
         for i=1:length(idStimInPosition_)
             fprintf('%s\n', idStimInPosition_{i});
         end
