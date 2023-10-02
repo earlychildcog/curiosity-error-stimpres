@@ -344,7 +344,7 @@ while iTrial < nTrial
     xp.trial.varValue.objT       = strcat(idStimInPosition_{3:end});    % so that in FamFlip it gathers the rest of the objects
     xp.trial.varValue.result     = flagResult;
     xp.trial.varValue.accuracy   = NaN;
-    xp.trial.varValue.sideMatch = nameSides{3-2*strcmp(xp.trial.varValue.objL,xp.trial.varValue.objT) - strcmp(xp.trial.varValue.objR, xp.trial.varValue.objT)};
+    xp.trial.varValue.sideMatch  = nameSides{3-2*strcmp(xp.trial.varValue.objL,xp.trial.varValue.objT) - strcmp(xp.trial.varValue.objR, xp.trial.varValue.objT)};
     xp.trial.varValue.sideChosen = 'NA';
     xp.trial.varValue.delayFirstFixT = NaN;
     xp.trial.varValue.delayFirstFixB = NaN;
