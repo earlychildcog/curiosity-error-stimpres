@@ -60,7 +60,7 @@ while iFrameMovement < nFrameMovement
             % sound
             if iFrameMovement == 0
                 xp.sound.stop;
-                xp.sound.which = xp.sound.data{2,6};
+                xp.sound.which = xp.sound.data{5,xp.trial.rewardToPlay};
                 xp.sound.play;
             end
 

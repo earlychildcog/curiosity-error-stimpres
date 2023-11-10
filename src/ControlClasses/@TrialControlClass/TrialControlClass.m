@@ -4,6 +4,8 @@ classdef TrialControlClass < TrialControlClassBase
     
     properties        
         flagAccuracy
+        rewardToPlay
+        rewardPlayed
     end
     
     methods

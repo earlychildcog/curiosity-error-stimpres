@@ -17,14 +17,14 @@ switch trialtype
 %         idStim               = idStim(randperm(size(idStim,2)));   % QUICK FIX - NEED TO SAVE THIS SOMEWHERE IN THE SUBJ StimOrder FILE
         nStimOnScreen        = length(idStim);                     % how many on screen (experiment phase)
         %         durTrialMax          = Inf;                      % No dur max for FamFlip trials (SHOULD WE put a really long length of several minutes?)
-    case 'FamMatch' % change to FamMatch1 + change the stimorder file
+    case 'FamMatch2Chances' % change to FamMatch1 + change the stimorder file
         flagEndIfLookAway    = false;
         flagFlipAllCards     = true;
         idStim               = idStimInPosition;
         idStimMatch          = idStimInPosition(end);
         nStimOnScreen        = length(idStim);                     % how many on screen (experiment phase)
         positionStimMatch    = find(idStimInPosition(1:nStimOnScreen-1)==idStimMatch);% 1: correct = L; 2: correct = R
-    case 'Fam'      % change to FamMatch2 + change the stimorder file
+    case 'FamMatch1Chance'      % change to FamMatch2 + change the stimorder file
         flagFlipAllCards     = true;
         idStim               = idStimInPosition;
         idStimMatch          = idStimInPosition(end);
@@ -200,7 +200,7 @@ while flagLoop
                 tHighlight         = xp.flip;
 
                 xp.sound.stop;
-                xp.sound.which = xp.sound.data{2,8}; %click
+                xp.sound.which = xp.sound.data{2,idStimInPosition(roiReward)}; %click
                 xp.sound.play;
             end
 
@@ -221,7 +221,7 @@ while flagLoop
                 xp.sound.which = xp.sound.data{2,3}; %flip
                 xp.sound.play;
                 % Go to next step
-                if strcmp(trialtype, 'FamMatch')
+                if strcmp(trialtype, 'FamMatch2Chances')
                     flagTrialStep  = 'Fam M1 - match';
                     flagBeginMatch = true;
                     WaitSecs(1)

@@ -206,11 +206,16 @@ levels  = [0 0 1];
 success = [0 0 0];
 sides = randi(2);
 
+nRewardSounds     = length(dir("stimuli/sounds/05-reward/*.wav"));
+rewardSoundPlayed = zeros(1,nRewardSounds);
+rewardToPlay      = randsample(nRewardSounds,1);
+xp.trial.rewardToPlay = rewardToPlay;
+
 difficulties = ["Easy" "Medium" "Hard" "xHard"];
 
 iFamRepeatTrial = 99;       % just 
 iTrial = 0;
-nFam = 6;
+nFam   = 6;
 nTrial = 50+nFam; %size(RandomisationTable, 1); % we may need some better way to end
 % nTest = sum(strcmp(RandomisationTable.TrialType, 'Test'));
 %% trial loop
@@ -278,7 +283,7 @@ while iTrial < nTrial
         if iTrial <= 4
             trialtype = [trialtype 'Chance'];   % if we give a second chance or not ---> we may need to specify more cases when to do that
         end
-        tableFam           = selectNextObject(tableFam, "FamEasy");
+        tableFam          = selectNextObject(tableFam, "FamEasy");
         idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
         idStimInPosition_(end) = idStimInPosition_(sides(end));
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
@@ -290,7 +295,7 @@ while iTrial < nTrial
         % /!\ need a loop run var to run through the fam trials
         trialtype        = tableFam.TrialType{iFamRepeatTrial+2};
         if iFamRepeatTrial <= 2
-            trialtype = [trialtype 'Chance'];   % if we give a second chance or not ---> we may need to specify more cases when to do that
+            trialtype = [trialtype 'Bias'];   % if we give a second chance or not ---> we may need to specify more cases when to do that
         end
         tableFam         = selectNextObject(tableFam, "FamEasy");
         idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
@@ -332,6 +337,7 @@ while iTrial < nTrial
             fprintf('%s\n', idStimInPosition_{i});
         end
     end
+
 
     % initialise and set
     flagResult = -10;
@@ -375,6 +381,15 @@ while iTrial < nTrial
             end
             flagResultAttget = xp.attgetPart;
         end
+    end
+
+    % update reward sound if success
+    
+    if xp.trial.varValue.accuracy == 1
+        rewardSoundPlayed(rewardToPlay) = rewardSoundPlayed(rewardToPlay) + 1;
+        candidates = find(rewardSoundPlayed == min(rewardSoundPlayed));
+        rewardToPlay = candidates(randi(length(candidates)));
+        xp.trial.rewardPlayed = rewardToPlay;
     end
     % set repeat trial flag (push a new trial at the end)
     if any(flagResult == [ (-25:-21) -6 -5 -4 -3  -1 ]) && strcmp(trialtype, 'Test')
@@ -507,7 +522,28 @@ switch trialtype
             flagResult = xp.stepFlyOut(flagAccuracy, stateCards, cardsPos);
             if flagResult<0, return, end
         end
-    case 'FamMatch'
+    case 'FamMatchBias'
+        flagResult = xp.stepFlyIn; %#ok<*NASGU>
+        if flagResult<0, return, end
+        flagResult = xp.stepTrackTop;
+        if flagResult<0, return, end
+        [flagResult, stateCards, flagAccuracy] = xp.stepTrackBottom(stateCards); %#ok<*ASGLU>
+        if flagResult<0, return, end
+        if ~flagAccuracy
+            [flagResult, stateCards] = stepMoveUpDown(xp, stateCards);
+            if flagResult<0, return, end
+            [flagResult, stateCards, flagAccuracy] = xp.stepTrackBottomAndTiltTop(stateCards);
+            if flagResult<0, return, end
+        end
+        [flagResult, stateCards, cardsPos] = xp.stepMoveMatchUp(stateCards);
+        if flagResult<0, return, end
+        flagResult = xp.stepFeedback(flagAccuracy, stateCards, cardsPos);
+        if flagResult<0, return, end
+        if flagAccuracy
+            flagResult = xp.stepFlyOut(flagAccuracy, stateCards, cardsPos);
+            if flagResult<0, return, end
+        end
+    case 'FamMatch2'
         flagResult = xp.stepFlyIn;
         if flagResult<0, return, end
         flagResult = xp.stepTrackTop;
