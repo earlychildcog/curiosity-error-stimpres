@@ -219,7 +219,8 @@ nFam   = 6;
 nTrial = 50+nFam; %size(RandomisationTable, 1); % we may need some better way to end
 % nTest = sum(strcmp(RandomisationTable.TrialType, 'Test'));
 %% trial loop
-
+[tableStimTest, tableStimFam, history] = setupTableStim();
+difficulty_past = "Easy";
 while iTrial < nTrial
     %xp.eeg.sync;
     xp.trial.nTrial = nTrial;       % updates in case `nTrial` changes
@@ -268,7 +269,7 @@ while iTrial < nTrial
 
     
     if iTrial <= 2
-        trialtype        = tableFam.TrialType{iTrial};
+        trialtype        = "FamFlip";
         idStimInPosition_ = tableFam{iTrial, 3:10};
         idStimInPosition_ = idStimInPosition_(randperm(length(idStimInPosition_)));
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjTest, 1:length(idStimInPosition_));
@@ -279,9 +280,10 @@ while iTrial < nTrial
         if iTrial > 3
             sides(end+1) = 3-sides(end); %#ok<AGROW>
         end
-        trialtype        = tableFam.TrialType{iTrial};
-        if iTrial <= 4
-            trialtype = [trialtype 'Chance'];   % if we give a second chance or not ---> we may need to specify more cases when to do that
+        if iTrial > 2 && iTrial <= 4
+            trialtype = "FamMatch1";   % if we give a second chance or not ---> we may need to specify more cases when to do that
+        elseif iTrial > 4
+            trialtype = "FamMatch2";   % if we give a second chance or not ---> we may need to specify more cases when to do that
         end
         tableFam          = selectNextObject(tableFam, "FamEasy");
         idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
@@ -293,10 +295,10 @@ while iTrial < nTrial
     elseif flagRepeatFam
         sides(end+1) = 3-sides(end); %#ok<AGROW>
         % /!\ need a loop run var to run through the fam trials
-        trialtype        = tableFam.TrialType{iFamRepeatTrial+2};
-        if iFamRepeatTrial <= 2
-            trialtype = [trialtype 'Bias'];   % if we give a second chance or not ---> we may need to specify more cases when to do that
-        end
+        trialtype        = "FamMatchBias";
+        % if iFamRepeatTrial <= 2
+        %     trialtype = [trialtype 'Bias'];   % if we give a second chance or not ---> we may need to specify more cases when to do that
+        % end
         tableFam         = selectNextObject(tableFam, "FamEasy");
         idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
         idStimInPosition_(3) = idStimInPosition_(sides(end));       % to change
@@ -305,12 +307,12 @@ while iTrial < nTrial
         trialID          = tableFam.trialID(tableFam.playing>0);
         fprintf('fam-match repeat %d trial number %d (anti-bias repeatition)\n', iFamRepeatTrial+2,find(tableFam.playing>0))
         % set the non-biased side match
-        isBiased = find(idStimInPosition == idStimInPosition(3),1) == sideBiased;
-        if (isBiased && mod(iFamRepeatTrial,2)==1) || (~isBiased && mod(iFamRepeatTrial,2)==0) % we play bias - nonbias - bias - nonbias
-            idStimInPosition(1:2) = idStimInPosition(2:-1:1);
-            idStimInPosition_(1:2) = idStimInPosition_(2:-1:1);
-        end
-        sides(end) = find(idStimInPosition(1:end-1) == idStimInPosition(end),1);
+        % isBiased = find(idStimInPosition == idStimInPosition(3),1) == sideBiased;
+        % if (isBiased && mod(iFamRepeatTrial,2)==1) || (~isBiased && mod(iFamRepeatTrial,2)==0) % we play bias - nonbias - bias - nonbias
+        %     idStimInPosition(1:2) = idStimInPosition(2:-1:1);
+        %     idStimInPosition_(1:2) = idStimInPosition_(2:-1:1);
+        % end
+        % sides(end) = find(idStimInPosition(1:end-1) == idStimInPosition(end),1);
     else
         trialtype = 'Test';
         if all(sides(end-2:end) == 1)
@@ -337,8 +339,34 @@ while iTrial < nTrial
             fprintf('%s\n', idStimInPosition_{i});
         end
     end
-
-
+    if difficulty == "FamEasy"
+        [tableStimFam, idStimInPosition] = selectNextPair(tableStimFam, [], difficulty, difficulty_past);
+    else
+        [tableStimTest, idStimInPosition] = selectNextPair(tableStimTest, history(1:(iTrial-1),:), difficulty, difficulty_past);
+    end
+    if iTrial > 2
+        idStimInPosition(3) = idStimInPosition(randi(2));
+        idStimInPosition(1:2) = idStimInPosition(randperm(2));
+        % idStimInPosition = idStimInPosition';
+        kDiff = find(difficulty == difficulties,1);
+        if flagRepeatFam
+            isBiased = find(idStimInPosition == idStimInPosition(3),1) == sideBiased;
+            if (isBiased && mod(iFamRepeatTrial,2)==1) || (~isBiased && mod(iFamRepeatTrial,2)==0) % we play bias - nonbias - bias - nonbias
+                idStimInPosition(1:2) = idStimInPosition(2:-1:1);
+                idStimInPosition_(1:2) = idStimInPosition_(2:-1:1);
+            end
+            sides(end) = find(idStimInPosition(1:end-1) == idStimInPosition(end),1);
+        end
+        if isempty(kDiff)
+            kDiff = 0;
+        end
+        history(iTrial,:) = [idStimInPosition, kDiff];
+    end
+    difficulty_past = difficulty;
+    fprintf('%s trial number %d: difficulty %s, previous successes %d %d %d, previous levels %d %d %d, objects:\n', trialtype, iTrial, difficulty, success, levels)
+    for i=1:length(idStimInPosition_)
+        fprintf('%s\n', idStimInPosition_{i});
+    end
     % initialise and set
     flagResult = -10;
     xp.trial.varValue.trialtype  = char(trialtype);
@@ -389,7 +417,7 @@ while iTrial < nTrial
         rewardSoundPlayed(rewardToPlay) = rewardSoundPlayed(rewardToPlay) + 1;
         candidates = find(rewardSoundPlayed == min(rewardSoundPlayed));
         rewardToPlay = candidates(randi(length(candidates)));
-        xp.trial.rewardPlayed = rewardToPlay;
+        xp.trial.rewardToPlay = rewardToPlay;
     end
     % set repeat trial flag (push a new trial at the end)
     if any(flagResult == [ (-25:-21) -6 -5 -4 -3  -1 ]) && strcmp(trialtype, 'Test')
@@ -501,7 +529,7 @@ switch trialtype
     case 'FamFlip'
         flagResult = xp.stepFam9cards;
         if flagResult<0, return, end
-    case 'FamMatchChance'
+    case 'FamMatch1'
         flagResult = xp.stepFlyIn; %#ok<*NASGU>
         if flagResult<0, return, end
         flagResult = xp.stepTrackTop;
@@ -532,7 +560,7 @@ switch trialtype
         if ~flagAccuracy
             [flagResult, stateCards] = stepMoveUpDown(xp, stateCards);
             if flagResult<0, return, end
-            [flagResult, stateCards, flagAccuracy] = xp.stepTrackBottomAndTiltTop(stateCards);
+            [flagResult, stateCards, flagAccuracy] = xp.stepTrackBottom(stateCards);
             if flagResult<0, return, end
         end
         [flagResult, stateCards, cardsPos] = xp.stepMoveMatchUp(stateCards);
@@ -577,6 +605,30 @@ switch trialtype
         end
 end
 
+end
+
+function [tableStimTest, tableStimFam, history] = setupTableStim()
+imagefolder_fam = "stimuli/images/04-ObjFamMatch";
+imagefolder_test = "stimuli/images/05-ObjTest";
+
+tableStimTest = gettable(imagefolder_test);
+tableStimFam = gettable(imagefolder_fam);
+
+
+history = zeros(1000,4);
+    function tableStim = gettable(imagefolder)
+        image_metadata = cat(1,dir(fullfile(imagefolder,"*.png")).name);
+        image_metadata = image_metadata(:,[1 3 5 7]);
+        nImage = size(image_metadata,1);
+        cats = unique(image_metadata(:,1))';
+        nCat = numel(cats);
+        nSub = 4;
+        % image_count = zeros(nImage,1);
+        tableStim = array2table(image_metadata,VariableNames=["cat" "sub" "col" "id"]);
+        tableStim.idfull = (1:nImage)';
+        tableStim.count = zeros(nImage,1);
+        tableStim.last = zeros(nImage,1);
+    end
 end
 
 function resetFunctions

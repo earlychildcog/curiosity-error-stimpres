@@ -28,7 +28,13 @@ for iObject = 1:length(stateCards)
     Screen('DrawTexture', xp.screen.win, txFrame, [], rectCards(:,iObject)', angle(iObject), []); % card frame
     if stateCards(iObject) >= 2
         rect = rectCards(:,iObject) + xp.settings.padding;                                   % card content if up
+        if length(xp.settings.idStim) < iObject
+            disp(1)
+        end
         txObj = xp.image.texture{iFolderImages,xp.settings.idStim(iObject)};
+        if isempty(txObj)
+            disp(1)
+        end
         Screen('DrawTexture', xp.screen.win, txObj, [], rect,angle(iObject));
     end
 end
