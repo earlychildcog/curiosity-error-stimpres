@@ -8,19 +8,37 @@ arguments
 end
 loopselect = 0;
 tableImage.incl = true(size(tableImage,1),1);
-idSelect = zeros(1,2);
-% do not repeat items
-if difficulty == "FamEasy" && ~isempty(history)
-    history((history(:,4) ~= 0), :) = [];
-end
-if size(history,1) > 1
-    tableImage.incl(ismember(tableImage.idfull, history(end-1:end,1:2))) = false;
-elseif size(history,1) == 1
-    tableImage.incl(ismember(tableImage.idfull, history(end,1:2))) = false;
+if difficulty ~= "FamFlip"
+    idSelect = zeros(1,2);
+    % do not repeat items
+    if difficulty == "FamEasy" && ~isempty(history)
+        history((history(:,4) ~= 0), :) = [];
+    end
+    if size(history,1) > 1
+        tableImage.incl(ismember(tableImage.idfull, history(end-1:end,1:2))) = false;
+    elseif size(history,1) == 1
+        tableImage.incl(ismember(tableImage.idfull, history(end,1:2))) = false;
+    end
+else
+    if isempty(history)
+        history = zeros(2,4);
+    end
 end
 %% Easy diff
 if difficulty == "FamFlip"      % to fix
-    idSelect = datasample(tableImage.idfull, 8, 'Replace', false);
+    categories = unique(tableImage.cat);
+    nCat  =numel(categories);
+    idSelect = zeros(2,nCat);
+    for iCat = 1:nCat
+        good = false;
+        while ~good
+            idSelect(:,iCat) = datasample(tableImage.idfull(tableImage.cat == categories(iCat)), 2, 'Replace', false);
+            if diff(tableImage.sub(ismember(tableImage.idfull, idSelect(:,iCat)))) ~= 0 &&...
+                    isempty(intersect(tableImage.sub(ismember(tableImage.idfull, history(:,iCat))), tableImage.sub(ismember(tableImage.idfull, idSelect(:,iCat)))))
+                good = true;
+            end
+        end
+    end
 elseif difficulty == "Easy" || difficulty == "FamEasy"
 
     % remove colours repeated

@@ -221,6 +221,7 @@ nTrial = 50+nFam; %size(RandomisationTable, 1); % we may need some better way to
 %% trial loop
 [tableStimTest, tableStimFam, history] = setupTableStim();
 difficulty_past = "Easy";
+history_famflip = [];
 while iTrial < nTrial
     %xp.eeg.sync;
     xp.trial.nTrial = nTrial;       % updates in case `nTrial` changes
@@ -273,7 +274,7 @@ while iTrial < nTrial
         idStimInPosition_ = tableFam{iTrial, 3:10};
         idStimInPosition_ = idStimInPosition_(randperm(length(idStimInPosition_)));
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjTest, 1:length(idStimInPosition_));
-        difficulty       = tableFam.Difficulty{iTrial};
+        difficulty       = "FamFlip";
         trialID          = tableFam.trialID(iTrial);
         fprintf('fam-flip trial number %d\n', iTrial)
     elseif iTrial <= nFam
@@ -289,7 +290,7 @@ while iTrial < nTrial
         idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
         idStimInPosition_(end) = idStimInPosition_(sides(end));
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
-        difficulty       = tableFam.Difficulty{tableFam.playing>0};
+        difficulty       = "FamEasy";
         trialID          = tableFam.trialID(tableFam.playing>0);
         fprintf('fam-match trial %d number %d\n', iTrial, find(tableFam.playing>0))
     elseif flagRepeatFam
@@ -303,7 +304,7 @@ while iTrial < nTrial
         idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
         idStimInPosition_(3) = idStimInPosition_(sides(end));       % to change
         idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
-        difficulty       = tableFam.Difficulty{tableFam.playing>0};
+        difficulty       = "FamEasy";
         trialID          = tableFam.trialID(tableFam.playing>0);
         fprintf('fam-match repeat %d trial number %d (anti-bias repeatition)\n', iFamRepeatTrial+2,find(tableFam.playing>0))
         % set the non-biased side match
@@ -341,6 +342,10 @@ while iTrial < nTrial
     end
     if difficulty == "FamEasy"
         [tableStimFam, idStimInPosition] = selectNextPair(tableStimFam, [], difficulty, difficulty_past);
+    elseif difficulty == "FamFlip"
+        [tableStimTest, idStimInPosition] = selectNextPair(tableStimTest, history_famflip, difficulty, difficulty_past);
+        history_famflip = idStimInPosition;
+        idStimInPosition = idStimInPosition(randperm(numel(idStimInPosition)));
     else
         [tableStimTest, idStimInPosition] = selectNextPair(tableStimTest, history(1:(iTrial-1),:), difficulty, difficulty_past);
     end

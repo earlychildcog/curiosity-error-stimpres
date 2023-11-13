@@ -1,4 +1,4 @@
-imagefolder = "curiosity-error-stimpres/stimuli/images/05-ObjTest";
+imagefolder = "stimuli/images/05-ObjTest";
 image_metadata = cat(1,dir(fullfile(imagefolder,"*.png")).name);
 image_metadata = image_metadata(:,[1 3 5 7]);
 
@@ -20,11 +20,11 @@ iTrial = 0;
 %%
 nTrial = 100;
 verbose = true;
-history = zeros(nTrial,3);
+history = zeros(nTrial,4);
 skill = 0.6;
 scaling = 3;
 kDiff = 1;
-listDiff = ["easy", "medium", "hard", "xhard"];
+listDiff = ["Easy", "Medium", "Hard", "xHard"];
 success = zeros(1,3);
 tic
 for k=1:nTrial
