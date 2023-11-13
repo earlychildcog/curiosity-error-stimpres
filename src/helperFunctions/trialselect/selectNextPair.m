@@ -240,7 +240,7 @@ elseif difficulty == "Hard"
     subsSelect = datasample(tableCountSub.sub, 1, 'Replace', false, 'Weights', sum(tableCountSub.sum_count+1)./(tableCountSub.sum_count+1)');
     tableImage_ = tableImage(tableImage.cat == catSelect & tableImage.sub == subsSelect & tableImage.incl,:);     % look into the category only
     while loopselect < 100
-        idSelect = datasample(tableImage_.idfull,2, 'Replace', false,'Weights',1./(tableImage_.count+1)); % select item
+        idSelect = datasample(tableImage_.idfull,2, 'Replace', false,'Weights',1./(tableImage_.count+1))'; % select item
         if diff(tableImage.col(ismember(tableImage.idfull, idSelect))) == 0
             loopselect = loopselect + 1;
         else
@@ -296,7 +296,7 @@ elseif difficulty == "xHard"
     tableImage_ = tableImage_(ismember(tableImage_.col, b), :);
     % ok this is a bit stupid, but what if in a subcategory there are two pairs of same colour? just making sure. Though I could also just simply pick a colour 
     while loopselect < 100
-        idSelect = datasample(tableImage_.idfull,2, 'Replace', false,'Weights',1./(tableImage_.count+1)); % select item
+        idSelect = datasample(tableImage_.idfull,2, 'Replace', false,'Weights',1./(tableImage_.count+1))'; % select item
         if diff(tableImage.col(ismember(tableImage.idfull, idSelect))) ~= 0
             loopselect = loopselect + 1;
         else

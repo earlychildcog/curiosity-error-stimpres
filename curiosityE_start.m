@@ -365,6 +365,8 @@ while iTrial < nTrial
         if isempty(kDiff)
             kDiff = 0;
         end
+        idStimInPosition
+        kDiff
         history(iTrial,:) = [idStimInPosition, kDiff];
     end
     difficulty_past = difficulty;
