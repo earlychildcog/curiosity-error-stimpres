@@ -175,26 +175,26 @@ nameSides      = {'left','right','NA'};
 xp.eeg.startrec;
 
 
-fileRando = sprintf('rand/StimOrder_Subj%03d_Session%d.csv',xp.subject, xp.sessionNo);
-opts = detectImportOptions(fileRando);
-opts.VariableTypes = strrep(opts.VariableTypes, 'char', 'string');      % load replace char encoding to string encoding for simplicity in the code later
+% fileRando = sprintf('rand/StimOrder_Subj%03d_Session%d.csv',xp.subject, xp.sessionNo);
+% opts = detectImportOptions(fileRando);
+% opts.VariableTypes = strrep(opts.VariableTypes, 'char', 'string');      % load replace char encoding to string encoding for simplicity in the code later
 % fileRando = sprintf('rand/StimOrder_00test_ExtraFam.csv');
 % fileScaling = 'rand/scaling.csv';
 % fileRando = sprintf('rand_stim/StimOrderPilotStim_Subj%03d.csv',xp.subject); %FOR STIM PILOT
-tableFam = readtable(fileRando, opts);
-% RandomisationTable = RandomisationTable()
-tableTest = tableFam(tableFam.TrialType == "Test", 1:5);
-tableFam = tableFam(tableFam.TrialType ~= "Test", :);
-tableFam.trialID = (1:size(tableFam,1))';
-tableFam.playedTimes = zeros(size(tableFam,1),2);
-tableFam.playing = zeros(size(tableFam,1),1);
-tableFam.Properties.VariableNames(3:5) = ["objL" "objR" "objT"];
+% tableFam = readtable(fileRando, opts);
+% % RandomisationTable = RandomisationTable()
+% tableTest = tableFam(tableFam.TrialType == "Test", 1:5);
+% tableFam = tableFam(tableFam.TrialType ~= "Test", :);
+% tableFam.trialID = (1:size(tableFam,1))';
+% tableFam.playedTimes = zeros(size(tableFam,1),2);
+% tableFam.playing = zeros(size(tableFam,1),1);
+% tableFam.Properties.VariableNames(3:5) = ["objL" "objR" "objT"];
 
 % RandomisationTest = readtable(fileScaling);
-tableTest.playedTimes = zeros(size(tableTest,1),2);        % will save how many time each row has been played
-tableTest.playing = zeros(size(tableTest,1),1);        % will save which row played last
-tableTest.trialID = (1:size(tableTest,1))';
-tableTest.Properties.VariableNames(3:5) = ["objL" "objR" "objT"];
+% tableTest.playedTimes = zeros(size(tableTest,1),2);        % will save how many time each row has been played
+% tableTest.playing = zeros(size(tableTest,1),1);        % will save which row played last
+% tableTest.trialID = (1:size(tableTest,1))';
+% tableTest.Properties.VariableNames(3:5) = ["objL" "objR" "objT"];
 % randT = rand([size(tableTest,1) 1]) > 0.5;      % to change after
 % tableTest.objT(randT) = tableTest.objL(randT);
 % tableTest.objT(~randT) = tableTest.objR(~randT);
@@ -204,8 +204,8 @@ nameObjTest = arrayfun(@(x)string(x.name), dir("stimuli/images/05-ObjTest/*.png"
 
 levels  = [0 0 1];
 success = [0 0 0];
-sides = randi(2);
-
+sides = [];
+wasBiased = false;
 nRewardSounds     = length(dir("stimuli/sounds/05-reward/*.wav"));
 rewardSoundPlayed = zeros(1,nRewardSounds);
 rewardToPlay      = randsample(nRewardSounds,1);
@@ -237,6 +237,7 @@ while iTrial < nTrial
             flagRepeatFam = numel(unique(xp.trial.sideRevealed(end-3:end))) == 1 && sum(xp.trial.flagAccuracy(end-3:end) == 0) >= 2;
             if flagRepeatFam
                 sideBiased = xp.trial.sideRevealed(end);
+                wasBiased = true;
             end
         else
             flagRepeatFam = false;
@@ -271,42 +272,41 @@ while iTrial < nTrial
     
     if iTrial <= 2
         trialtype        = "FamFlip";
-        idStimInPosition_ = tableFam{iTrial, 3:10};
-        idStimInPosition_ = idStimInPosition_(randperm(length(idStimInPosition_)));
-        idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjTest, 1:length(idStimInPosition_));
+        % idStimInPosition_ = tableFam{iTrial, 3:10};
+        % idStimInPosition_ = idStimInPosition_(randperm(length(idStimInPosition_)));
+        % idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjTest, 1:length(idStimInPosition_));
         difficulty       = "FamFlip";
-        trialID          = tableFam.trialID(iTrial);
-        fprintf('fam-flip trial number %d\n', iTrial)
+        % trialID          = tableFam.trialID(iTrial);
+        % fprintf('fam-flip trial number %d\n', iTrial)
     elseif iTrial <= nFam
-        if iTrial > 3
-            sides(end+1) = 3-sides(end); %#ok<AGROW>
-        end
+        % if iTrial > 3
+        %     sides(end+1) = 3-sides(end); %#ok<AGROW>
+        % end
         if iTrial > 2 && iTrial <= 4
             trialtype = "FamMatch1";   % if we give a second chance or not ---> we may need to specify more cases when to do that
         elseif iTrial > 4
             trialtype = "FamMatch2";   % if we give a second chance or not ---> we may need to specify more cases when to do that
         end
-        tableFam          = selectNextObject(tableFam, "FamEasy");
-        idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
-        idStimInPosition_(end) = idStimInPosition_(sides(end));
-        idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
+        % tableFam          = selectNextObject(tableFam, "FamEasy");
+        % idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
+        % idStimInPosition_(end) = idStimInPosition_(sides(end));
+        % idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
         difficulty       = "FamEasy";
-        trialID          = tableFam.trialID(tableFam.playing>0);
-        fprintf('fam-match trial %d number %d\n', iTrial, find(tableFam.playing>0))
+        % fprintf('fam-match trial %d number %d\n', iTrial, find(tableFam.playing>0))
     elseif flagRepeatFam
-        sides(end+1) = 3-sides(end); %#ok<AGROW>
+        % sides(end+1) = 3-sides(end); %#ok<AGROW>
         % /!\ need a loop run var to run through the fam trials
         trialtype        = "FamMatchBias";
         % if iFamRepeatTrial <= 2
         %     trialtype = [trialtype 'Bias'];   % if we give a second chance or not ---> we may need to specify more cases when to do that
         % end
-        tableFam         = selectNextObject(tableFam, "FamEasy");
-        idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
-        idStimInPosition_(3) = idStimInPosition_(sides(end));       % to change
-        idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
+        % tableFam         = selectNextObject(tableFam, "FamEasy");
+        % idStimInPosition_ = tableFam{tableFam.playing>0,["objL" "objR" "objT"]};
+        % idStimInPosition_(3) = idStimInPosition_(sides(end));       % to change
+        % idStimInPosition = splitapply(@find, idStimInPosition_ == nameObjFam, 1:length(idStimInPosition_));
         difficulty       = "FamEasy";
-        trialID          = tableFam.trialID(tableFam.playing>0);
-        fprintf('fam-match repeat %d trial number %d (anti-bias repeatition)\n', iFamRepeatTrial+2,find(tableFam.playing>0))
+        % trialID         = 0; % tableFam.trialID(tableFam.playing>0);
+        % fprintf('fam-match repeat %d trial number %d (anti-bias repeatition)\n', iFamRepeatTrial+2,find(tableFam.playing>0))
         % set the non-biased side match
         % isBiased = find(idStimInPosition == idStimInPosition(3),1) == sideBiased;
         % if (isBiased && mod(iFamRepeatTrial,2)==1) || (~isBiased && mod(iFamRepeatTrial,2)==0) % we play bias - nonbias - bias - nonbias
@@ -316,62 +316,87 @@ while iTrial < nTrial
         % sides(end) = find(idStimInPosition(1:end-1) == idStimInPosition(end),1);
     else
         trialtype = 'Test';
-        if all(sides(end-2:end) == 1)
-            sides(end+1) = 2;                               %#ok<AGROW>
-        elseif all(sides(end-2:end) == 2)
-            sides(end+1) = 1;                               %#ok<AGROW>
-        elseif length(sides) > 9    % this part tries to equalise  the frequency of sides appearing a bit more
-            sides(end+1) = 1+(rand() > mean(sides == 2));                        %#ok<AGROW>
-        else      
-            sides(end+1) = randi(2);                        %#ok<AGROW>
-        end
+        % if all(sides(end-2:end) == 1)
+        %     sides(end+1) = 2;                               %#ok<AGROW>
+        % elseif all(sides(end-2:end) == 2)
+        %     sides(end+1) = 1;                               %#ok<AGROW>
+        % elseif length(sides) > 9    % this part tries to equalise  the frequency of sides appearing a bit more
+        %     sides(end+1) = 1+(rand() > mean(sides == 2));                        %#ok<AGROW>
+        % else      
+        %     sides(end+1) = randi(2);                        %#ok<AGROW>
+        % end
         %get new level, check how good the subject has been in previous trials
         [levels, success]   = getDifficultyLevel(levels, success, length(difficulties));
         difficulty          = difficulties(levels(end));    % we get new difficulty
-        tableTest                  = selectNextObject(tableTest, difficulty);
-        idStimInPosition_   = tableTest{tableTest.playing>0, ["objL" "objR" "objT"]}; 
-        if sides(end) ~= find(idStimInPosition_(1:end-1) == idStimInPosition_(end),1)
-            idStimInPosition_([1 2]) = idStimInPosition_([2 1]);
-        end
-        idStimInPosition    = splitapply(@find, idStimInPosition_ == nameObjTest, 1:length(idStimInPosition_));
-        trialID             = tableTest.trialID(tableTest.playing>0);
-        fprintf('test trial number %d: difficulty %s, previous successes %d %d %d, previous levels %d %d %d, objects:\n', iTrial, difficulty, success, levels)
-        for i=1:length(idStimInPosition_)
-            fprintf('%s\n', idStimInPosition_{i});
-        end
+        % tableTest                  = selectNextObject(tableTest, difficulty);
+        % idStimInPosition_   = tableTest{tableTest.playing>0, ["objL" "objR" "objT"]}; 
+        % if sides(end) ~= find(idStimInPosition_(1:end-1) == idStimInPosition_(end),1)
+        %     idStimInPosition_([1 2]) = idStimInPosition_([2 1]);
+        % end
+        % idStimInPosition    = splitapply(@find, idStimInPosition_ == nameObjTest, 1:length(idStimInPosition_));
+        % fprintf('test trial number %d: difficulty %s, previous successes %d %d %d, previous levels %d %d %d, objects:\n', iTrial, difficulty, success, levels)
+        % for i=1:length(idStimInPosition_)
+        %     fprintf('%s\n', idStimInPosition_{i});
+        % end
     end
     if difficulty == "FamEasy"
         [tableStimFam, idStimInPosition] = selectNextPair(tableStimFam, [], difficulty, difficulty_past);
+        idStimInPosition_ = (string(tableStimFam.cat(idStimInPosition)) + "-" + string(tableStimFam.sub(idStimInPosition)) + "-" + string(tableStimFam.col(idStimInPosition)) + "-" + string(tableStimFam.id(idStimInPosition)) + ".png")'; 
     elseif difficulty == "FamFlip"
         [tableStimTest, idStimInPosition] = selectNextPair(tableStimTest, history_famflip, difficulty, difficulty_past);
         history_famflip = idStimInPosition;
         idStimInPosition = idStimInPosition(randperm(numel(idStimInPosition)));
+        idStimInPosition_ = (string(tableStimTest.cat(idStimInPosition)) + "-" + string(tableStimTest.sub(idStimInPosition)) + "-" + string(tableStimTest.col(idStimInPosition)) + "-" + string(tableStimTest.id(idStimInPosition)) + ".png")'; 
     else
         [tableStimTest, idStimInPosition] = selectNextPair(tableStimTest, history(1:(iTrial-1),:), difficulty, difficulty_past);
+        idStimInPosition_ = (string(tableStimTest.cat(idStimInPosition)) + "-" + string(tableStimTest.sub(idStimInPosition)) + "-" + string(tableStimTest.col(idStimInPosition)) + "-" + string(tableStimTest.id(idStimInPosition)) + ".png")';
     end
+    idStimInPosition_ = cellstr(idStimInPosition_);
     if iTrial > 2
-        idStimInPosition(3) = idStimInPosition(randi(2));
+        % idStimInPosition(3) = idStimInPosition(randi(2));
         idStimInPosition(1:2) = idStimInPosition(randperm(2));
-        % idStimInPosition = idStimInPosition';
+        if isempty(sides)       % first trial
+            sides = randi(2);
+        elseif numel(sides) <= 2        % first few trials after
+            sides(end+1) = 3-sides(end); %#ok<AGROW>
+        elseif flagRepeatFam            % debiasing
+            % do nothing
+        elseif wasBiased                % after debiasing, show opposite side first
+            wasBiased = false;
+            sides(end+1) = 3-sideBiased; %#ok<AGROW>
+        elseif all(sides(end-2:end) == 1)       % do not repeat too much on one side
+            sides(end+1) = 2;                               %#ok<AGROW>
+        elseif all(sides(end-2:end) == 2)       % or the other
+            sides(end+1) = 1;                               %#ok<AGROW>
+        elseif numel(sides) > 9    % this part tries to equalise  the frequency of sides appearing a bit more
+            sides(end+1) = 1+(rand() > mean(sides == 2));                        %#ok<AGROW>
+        else      % whatever
+            sides(end+1) = randi(2);                        %#ok<AGROW>
+        end
+        idStimInPosition(3) = idStimInPosition(sides(end));
+        idStimInPosition_(3) = idStimInPosition_(sides(end));
         kDiff = find(difficulty == difficulties,1);
         if flagRepeatFam
             isBiased = find(idStimInPosition == idStimInPosition(3),1) == sideBiased;
             if (isBiased && mod(iFamRepeatTrial,2)==1) || (~isBiased && mod(iFamRepeatTrial,2)==0) % we play bias - nonbias - bias - nonbias
                 idStimInPosition(1:2) = idStimInPosition(2:-1:1);
-                idStimInPosition_(1:2) = idStimInPosition_(2:-1:1);
+                % idStimInPosition_(1:2) = idStimInPosition_(2:-1:1);     % WTF???????
             end
             sides(end) = find(idStimInPosition(1:end-1) == idStimInPosition(end),1);
         end
         if isempty(kDiff)
             kDiff = 0;
         end
-        idStimInPosition
-        kDiff
         history(iTrial,:) = [idStimInPosition, kDiff];
+        trialID = 10^4*idStimInPosition(1) + 10^2*idStimInPosition(2) + sides(end);
+    else
+        trialID = iTrial;
     end
+    
     difficulty_past = difficulty;
+
     fprintf('%s trial number %d: difficulty %s, previous successes %d %d %d, previous levels %d %d %d, objects:\n', trialtype, iTrial, difficulty, success, levels)
-    for i=1:length(idStimInPosition_)
+    for i=1:numel(idStimInPosition_)
         fprintf('%s\n', idStimInPosition_{i});
     end
     % initialise and set
@@ -453,7 +478,7 @@ while iTrial < nTrial
             fprintf('repeat fam trial %d again now\n',iTrial)
         else
             nTrial = nTrial + 1;
-            tableTest.playedTimes(tableTest.playing>0) = tableTest.playedTimes(tableTest.playing>0) - 0.5;
+            tableStimTest.count(tableStimTest.last==1) = tableStimTest.count(tableStimTest.last==1) - 0.5;
             fprintf('trial added, total number of trials %d\n',nTrial)
         end
     end
@@ -614,29 +639,6 @@ end
 
 end
 
-function [tableStimTest, tableStimFam, history] = setupTableStim()
-imagefolder_fam = "stimuli/images/04-ObjFamMatch";
-imagefolder_test = "stimuli/images/05-ObjTest";
-
-tableStimTest = gettable(imagefolder_test);
-tableStimFam = gettable(imagefolder_fam);
-
-
-history = zeros(1000,4);
-    function tableStim = gettable(imagefolder)
-        image_metadata = cat(1,dir(fullfile(imagefolder,"*.png")).name);
-        image_metadata = image_metadata(:,[1 3 5 7]);
-        nImage = size(image_metadata,1);
-        cats = unique(image_metadata(:,1))';
-        nCat = numel(cats);
-        nSub = 4;
-        % image_count = zeros(nImage,1);
-        tableStim = array2table(image_metadata,VariableNames=["cat" "sub" "col" "id"]);
-        tableStim.idfull = (1:nImage)';
-        tableStim.count = zeros(nImage,1);
-        tableStim.last = zeros(nImage,1);
-    end
-end
 
 function resetFunctions
 clear checkEndTrial checkFix checkROI
