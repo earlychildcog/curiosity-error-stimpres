@@ -1,22 +1,24 @@
-function [flagResult, stateCards, flagCorrect] = stepTrackBottom(xp, trialtype)
+function [flagResult, stateCards, flagCorrect] = stepTrackBottom(xp, trialtype, stateCards)
 
 %% STARTUP
 
+if nargin < 3
+    stateCards        = [0 0 2];
+end
 
 % initialise
 flagResult    = false;
 flagCorrect   = false;
 flagKeyFlip   = false;
-durMax        = 10;   % abort if subject takes too long to flip
+durMax        = xp.settings.durTrackBottom;   % abort if subject takes too long to flip
 % tracking
 nStimOnScreen     = xp.settings.nStimOnScreen;
 idStim            = xp.settings.idStim;
 durMinToFlip      = xp.settings.durMinToFlip;
 durToHighlight    = xp.settings.durToHighlight;
-stateCards        = [0 0 2];
 positionStimMatch = find(idStim == idStim(end), 1);
 cardPos           = ["left","right","top"];
-
+roiTarget = [1 2];
 DrawAllCards(xp, stateCards);
 timeStepStart = xp.flip;
 %% ACTION LOOP
@@ -26,9 +28,9 @@ while true
     [roiFix, timeFix, flagKeyFlip] = xp.checkFix(1+(1:nStimOnScreen), 1/30); % added some padding (1/30 * screen height) to make AOIs bigger
     [durFixIn, flagFixIn, timeFirstIn] = xp.checkROI(roiFix, timeFix);
     flagResult = xp.checkKeyboard;
-    flagResult = xp.checkEndTrial(flagResult,roiFix);
+    flagResult = xp.checkEndTrial(flagResult,roiFix, roiTarget, timeStepStart, durMax);
     if roiFix <= 0 || roiFix >= nStimOnScreen
-        flagResult = xp.checkEndStep(flagResult, timeStepStart, durMax);
+        flagResult = xp.checkEndStep(flagResult, timeStepStart, durMax, roiFix, roiTarget);
     end
     if flagResult, return, end
 
@@ -36,10 +38,15 @@ while true
 
     % HIGHLIGHT
     % If fixation has been for long enoung, and we have fixation right now on some object, and that object is stably fixated
-    if roiFix > 0 && stateCards(roiFix) == 0 && durFixIn > durToHighlight &&...
+    if roiFix > 0 && (stateCards(roiFix) == 0 || stateCards(roiFix) == 2) && durFixIn > durToHighlight &&...
             flagFixIn && roiFix < nStimOnScreen
-        stateCards(1:(nStimOnScreen-1)) = 0;
-        stateCards(roiFix) = 1;              % highlight
+        if stateCards(roiFix) == 0
+            stateCards(1:end-1) = 0;
+            stateCards(roiFix) = 1;   % fixated card is highlighted
+        elseif stateCards(roiFix) == 2
+            stateCards(1:end-1) = 2;
+            stateCards(roiFix) = 3;   % fixated card is flipped AND highlighted
+        end
         DrawAllCards(xp, stateCards);
         tHighlight         = xp.flip;
         timeFirstIn_       = timeFirstIn;
@@ -51,12 +58,12 @@ while true
 
     % REVEAL
     % if fixation has been for long enoung, and we have fixation right now on some object, and that object is stably fixated
-    if roiFix > 0 && stateCards(roiFix) == 1 && durFixIn > durMinToFlip &&...
+    if roiFix > 0 && (stateCards(roiFix) == 1 || stateCards(roiFix) == 3) && durFixIn > durMinToFlip &&...
             flagFixIn && (GetSecs - tHighlight) > durMinToFlip
         % save which side was revelaed
         xp.trial.sideRevealed(end+1) = roiFix;
         % flip
-        stateCards(roiFix) = 2;
+        stateCards(roiFix) = max(2,stateCards(roiFix)); % in case it was highlighted
         DrawAllCards(xp, stateCards);
         tBottomCardReveal = xp.flip;
         xp.eyelink.write('flipped bottom card (%s) to face up @%.3fsec',cardPos(roiFix),tBottomCardReveal)

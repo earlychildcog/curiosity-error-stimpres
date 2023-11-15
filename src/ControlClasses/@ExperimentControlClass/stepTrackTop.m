@@ -13,17 +13,17 @@ durToHighlight = xp.settings.durToHighlight;
 durToFlip      = xp.settings.durMinToFlip; 
 timeStepStart  = GetSecs;
 durMinVisible  = 2;
-durMax         = 20;        % abort if subject takes too long to flip
-
+durMax         = xp.settings.durTrackTop;        % abort if subject takes too long to flip
+roiTarget = nStimOnScreen;
 %% ACTION LOOP
 while true
     % checks
     [roiFix, timeFix, flagKeyFlip] = xp.checkFix(1+(1:nStimOnScreen), 1/30); % added some padding (1/30 * screen height) to make AOIs bigger
     [durFixIn, flagFixIn, timeFirstIn] = xp.checkROI(roiFix, timeFix);
     flagResult = xp.checkKeyboard;
-    flagResult = xp.checkEndTrial(flagResult, roiFix);
+    flagResult = xp.checkEndTrial(flagResult, roiFix, roiTarget, durMax);
     if roiFix ~= nStimOnScreen
-        flagResult = xp.checkEndStep(flagResult, timeStepStart, durMax);
+        flagResult = xp.checkEndStep(flagResult, timeStepStart, durMax, roiFix, roiTarget);
     end
     if flagResult, return, end
 

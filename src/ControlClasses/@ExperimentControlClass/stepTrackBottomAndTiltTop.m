@@ -25,7 +25,7 @@ kStepAngle      = durFrame./durAngleParts;
 KAngle          = [0:kStepAngle(1):1, 1:-kStepAngle(3):-1, -1:kStepAngle(1):0];
 nFrameMovement  = length(KAngle);
 stimOnset       = GetSecs;
-
+roiTarget = [1 2];
 % sound (see)
 % xp.sound.stop;
 xp.sound.which  = xp.sound.data{2,9};
@@ -42,7 +42,7 @@ while true
     [roiFix, timeFix, flagKeyFlip] = xp.checkFix(1+(1:nStimOnScreen), 1/30); % added some padding (1/30 * screen height) to make AOIs bigger
     [durFixIn, flagFixIn, timeFirstIn] = xp.checkROI(roiFix, timeFix);
     flagResult = xp.checkKeyboard;
-    flagResult = xp.checkEndTrial(flagResult, roiFix);
+    flagResult = xp.checkEndTrial(flagResult, roiFix, roiTarget, timeStepStart);
     if flagResult, return, end
 
     % movement (tilting)

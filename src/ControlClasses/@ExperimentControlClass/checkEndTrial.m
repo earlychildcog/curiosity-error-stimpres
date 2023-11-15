@@ -1,4 +1,4 @@
-function trialResult = checkEndTrial(xp, trialResult, roiFix)
+function trialResult = checkEndTrial(xp, trialResult, roiFix, roiTarget, timeStepStart, durMax)
 persistent timeTrialStart
 % if already trial aborts
 if nargin>1 && trialResult < 0
@@ -14,5 +14,11 @@ if isempty(timeTrialStart)
 end
 
 if GetSecs-timeTrialStart>xp.settings.durMaxTrial
-    trialResult = -5;
+    if nargin  < 3
+        trialResult = -5;
+    elseif nargin>2 && ~any(roiTarget == roiFix)
+        trialResult = -5;
+    elseif GetSecs - timeStepStart > durMax     % wait for step 
+        trialResult = -5;
+    end
 end

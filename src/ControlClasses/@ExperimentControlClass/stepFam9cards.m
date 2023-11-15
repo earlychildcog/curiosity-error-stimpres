@@ -47,7 +47,7 @@ while true
     [roiFix, timeFix, flagKeyFlip] = xp.checkFix(famRects, -1/50); % took away some padding (1/50 * screen height) to make AOIs SMALLER
     [durFixIn, flagFixIn, timeFirstIn] = xp.checkROI(roiFix, timeFix);
     flagResult = xp.checkKeyboard;
-    flagResult = xp.checkEndTrial(flagResult,roiFix);
+    flagResult = xp.checkEndTrial9cards(flagResult,roiFix);
     if flagResult, return, end
 
     % Highlight the current AOI card if fixate for long enough

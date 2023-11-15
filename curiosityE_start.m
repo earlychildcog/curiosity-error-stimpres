@@ -73,6 +73,8 @@ xp.settings.durToHighlight      = 0.2;
 xp.settings.durMinToFlip        = 0.3;  % time to flip after highlighting
 xp.settings.durMaxTrial         = 60;
 xp.settings.durMaxLookAway      = 10;
+xp.settings.durTrackBottom      = 10;
+xp.settings.durTrackTop         = 20;
 
 xp.settings.timeOut             = 0.1;   % time fixating away to reset fixation timer
 xp.settings.timeOutOfScreenMax  = 5;
@@ -439,6 +441,12 @@ while iTrial < nTrial
             elseif flagResultBreak == -9
                 break
             end
+            % flagResultAttget = xp.attgetPart;
+        % elseif flagResult == -1
+        %     xp.eyelink.calibrate;
+        %     flagResultAttget = xp.attgetPart;
+        elseif flagResult == -1
+            xp.eyelink.calibrate;
             flagResultAttget = xp.attgetPart;
         end
     end
@@ -454,10 +462,8 @@ while iTrial < nTrial
     % set repeat trial flag (push a new trial at the end)
     if any(flagResult == [ (-25:-21) -6 -5 -4 -3  -1 ]) && strcmp(trialtype, 'Test')
         flagRepeat = true;
-    elseif strcmp(trialtype, 'FamFlip')
-        if any(flagResult == [ (-25:-21) 6 ])
+    elseif any(flagResult == [ (-25:-21) 6 -1]) && startsWith(trialtype, 'Fam')
             flagRepeat = true;
-        end
     elseif any(flagResult == [ (-25:-21) -6 -5 -4 -1 6 ]) && ~strcmp(trialtype, 'Test')
         flagRepeat = true;
     end
@@ -592,7 +598,7 @@ switch trialtype
         if ~flagAccuracy
             [flagResult, stateCards] = stepMoveUpDown(xp, stateCards);
             if flagResult<0, return, end
-            [flagResult, stateCards, flagAccuracy] = xp.stepTrackBottom(stateCards);
+            [flagResult, stateCards, flagAccuracy] = xp.stepTrackBottom(trialtype, stateCards);
             if flagResult<0, return, end
         end
         [flagResult, stateCards, cardsPos] = xp.stepMoveMatchUp(stateCards);
