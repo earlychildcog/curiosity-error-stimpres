@@ -462,9 +462,9 @@ while iTrial < nTrial
     % set repeat trial flag (push a new trial at the end)
     if any(flagResult == [ (-25:-21) -6 -5 -4 -3  -1 ]) && strcmp(trialtype, 'Test')
         flagRepeat = true;
-    elseif any(flagResult == [ (-25:-21) 6 -1]) && startsWith(trialtype, 'Fam')
-            flagRepeat = true;
-    elseif any(flagResult == [ (-25:-21) -6 -5 -4 -1 6 ]) && ~strcmp(trialtype, 'Test')
+    elseif any(flagResult == [ (-25:-21) 6 -1]) && strcmp(trialtype, 'FamFlip')
+        flagRepeat = true;
+    elseif any(flagResult == [ (-25:-21) -6 -5 -4 -1 6 ]) && startsWith(trialtype, 'FamMatch')
         flagRepeat = true;
     end
 

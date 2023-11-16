@@ -47,9 +47,7 @@ while true
     [roiFix, timeFix, flagKeyFlip] = xp.checkFix(famRects, -1/50); % took away some padding (1/50 * screen height) to make AOIs SMALLER
     [durFixIn, flagFixIn, timeFirstIn] = xp.checkROI(roiFix, timeFix);
     flagResult = xp.checkKeyboard;
-    flagResult = xp.checkEndTrial9cards(flagResult,roiFix);
-    if flagResult, return, end
-
+    flagResult = xp.checkEndTrial(flagResult,roiFix);
     % Highlight the current AOI card if fixate for long enough
     % if fixation has been for long enoung, and we have fixation right now on some object, and that object is stably fixated
     if (roiFix>0) && stateCards(roiFix)==0 && (durFixIn > durToHighlight) && flagFixIn
@@ -88,8 +86,9 @@ while true
     % Terminate when:
     % trial duration >30s and there has been no new flip for >7s: move to next one if flipped >= 3 cards, else repeat
     % OR flipped all cards > 3s ago: move one (NEVER SEEMS TO HAPPEN)
-    if (GetSecs >= tTrialStart + durMaxFamFTrial && GetSecs >= tTurnUp + durMaxNoFlipEndTrial) || (sum(flippedCards) == nCards && GetSecs >= tComplete + 3)
-        if sum(flippedCards) < 3
+    if flagResult || (GetSecs >= tTrialStart + durMaxFamFTrial && GetSecs >= tTurnUp + durMaxNoFlipEndTrial) || (sum(flippedCards) == nCards && GetSecs >= tComplete + 3)
+        if flagResult == -3     % if press escape, go to next
+        elseif sum(flippedCards) < 3    % if flipped too few cards AND not pressed escape, repeat
             flagResult   = 6;
         end
         break
