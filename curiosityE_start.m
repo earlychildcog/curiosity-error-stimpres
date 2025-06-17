@@ -1,3 +1,4 @@
+
 %% Experimental script for the error task of the curiosity longitudinal study
 % Presenting objects on cards in a contingent manner
 %
@@ -53,11 +54,16 @@ end
 if debug > 0
     xp.debug      = true;                   % true keeps keyboard/mouse input, false disables them
 end
-if debug > 1
+if debug == 3
     eyetrackingOn = false;
     eegOn      = false;                   % using EEG?
 end
-
+if debug == 2
+    eyetrackingOn = true;
+    eegOn      = false;                   % using EEG?
+end
+eyetrackingOn
+eegOn
 if ismac
     xp.screen.nr  = min(Screen('Screens'));
 else
