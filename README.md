@@ -9,7 +9,8 @@ Task structure (from the preprint; please refer to the preprint’s methods for 
 
 ## technical details
 
-The script is written in MATLAB and uses Psychtoolbox ([https://psychtoolbox.org/](https://psychtoolbox.org/)) for stimuli presentation and synchronisation of data acquisition [1]. The host computer ran on Linux (Ubuntu 22.04 LTS).  
+The script is written in MATLAB and uses Psychtoolbox ([https://psychtoolbox.org/](https://psychtoolbox.org/)) for stimuli presentation and synchronisation of data acquisition (version details [1]).  
+
 Equipment used for data acquisition:  
 
 - Eyetracker: Eyelink 1000 plus eyetracker at 500Hz sampling rate, binocular (or monocular)
@@ -39,5 +40,5 @@ If you use this software in academic work, please credit our work by citing it [
 ---
 
 [0] Gal, C., Askitis, D., & Begus, K. (2026). Foundations of human self-reflection: Error-monitoring developmentally predicts the emergence of self-representation. bioRxiv 2026.02.01.702903; [https://doi.org/10.64898/2026.02.01.702903](https://doi.org/10.64898/2026.02.01.702903)  
-[1] Software versions will be added here soon  
+[1] Tested on MATLAB 2023a,  with Psychtoolbox version '3.0.19 - Flavor: Debian package - psychtoolbox-3 (3.0.19.2.dfsgl-1~nd22.04+1). Host computer ran Ubuntu 22.04 lts.
 [2] [https://github.com/earlychildcog/yapwrap](https://github.com/earlychildcog/yapwrap)
