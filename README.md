@@ -1,6 +1,8 @@
 
 ## about
 
+Find the latest version at https://github.com/earlychildcog/curiosity-error-stimpres
+
 Codebase for the experimental task "curiosity: error-monitoring" in the preprint "Foundations of human self-reflection: Error-monitoring developmentally predicts the emergence of self-representation" [0]  
 It runs a realtime gaze-controlled match-to-sample task for infants (12m-24m) with concurrent eyetracking and EEG acquisition. The participant flips cards by looking at them, and the task is to remember and choose which one of two cards matches a third one.  
 Task structure (from the preprint; please refer to the preprint’s methods for more details):  
